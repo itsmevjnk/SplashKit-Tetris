@@ -47,17 +47,38 @@ uint8_t check_collision(const game_data &game) {
     return check_collision(game, game.falling_piece);
 }
 
-/* perform an AND operation between the test piece and the playing field, useful for checking overlaps */
-uint16_t piece_and(const game_data &game, const piece &test_piece) {
-    uint16_t result = 0;
+/* detect horizontal collision/overlaps, used for wall kicks */
+uint8_t check_horiz_collision_overlap(const game_data &game, const piece &test_piece) {
+    uint8_t result = 0;
 
-    for(int y = 0; y < 3; y++) {
-        for(int x = 0; x < 3; x++) {
-            if(test_piece.type.bitmaps[test_piece.rotation] & (1 << (y * 4 + x))) {
-                /* there is a cell - go check it out */
-                int field_x = test_piece.position.x + x, field_y = test_piece.position.y + y;
-                if(field_y < 0 || field_x < 0) continue; // still out of bounds - nothing to check
-                if(game.playing_field[field_y][field_x] != NO_COLOUR) result |= (1 << ((y * 4) + x));
+    for(int x = 0; x < 4; x++) {
+        if(PIECE_COL(test_piece.type.bitmaps[test_piece.rotation], x) != 0) {
+            /* this column has cells */
+
+            if(x == 0 || PIECE_COL(test_piece.type.bitmaps[test_piece.rotation], x - 1) == 0)  {
+                /* left edge detected */
+                int field_x = test_piece.position.x + x;
+                if(field_x < 0) result |= COLLISION_LEFT; // left edge is out of bounds
+                else for(int y = 0; y < 4 && test_piece.position.y + y < FIELD_HEIGHT; y++) {
+                    int field_y = test_piece.position.y + y;
+                    if(game.playing_field[field_y][field_x] != NO_COLOUR) {
+                        result |= COLLISION_LEFT;
+                        break;
+                    }
+                }
+            }
+
+            if(x == 3 || PIECE_COL(test_piece.type.bitmaps[test_piece.rotation], x + 1) == 0) {
+                /* right edge detected */
+                int field_x = test_piece.position.x + x;
+                if(field_x >= FIELD_WIDTH) result |= COLLISION_RIGHT; // right edge is out of bounds
+                else for(int y = 0; y < 4 && test_piece.position.y + y < FIELD_HEIGHT; y++) {
+                    int field_y = test_piece.position.y + y;
+                    if(game.playing_field[field_y][field_x] != NO_COLOUR) {
+                        result |= COLLISION_RIGHT;
+                        break;
+                    }
+                }
             }
         }
     }
@@ -99,8 +120,24 @@ void handle_input(game_data &game) {
         piece new_piece = game.falling_piece; // rotated piece
         new_piece.rotation = (new_piece.rotation + 1) % 4;
 
-        if(piece_and(game, new_piece) == 0)
-            game.falling_piece = new_piece; // no overlaps, so we can swap out the piece for the rotated one
+        /* check for overlaps/wall kicks */
+        uint8_t check = check_horiz_collision_overlap(game, new_piece);
+        if(check != (COLLISION_LEFT | COLLISION_RIGHT)) {
+            /* if we have a collision on both the left and right sides, it means our new piece is blocked by other cells */
+            bool ok = true; // set if we can place the piece (optionally after wall kicking)
+
+            if(check & COLLISION_LEFT) {
+                /* rightward kick and try again */
+                new_piece.position.x++;
+                ok = (check_horiz_collision_overlap(game, new_piece) == 0);
+            } else if(check & COLLISION_RIGHT) {
+                /* leftward kick and try again */
+                new_piece.position.x--;
+                ok = (check_horiz_collision_overlap(game, new_piece) == 0);
+            }
+
+            if(ok) game.falling_piece = new_piece; // any problems have been corrected, and we can now place our piece
+        }
     }
 }
 

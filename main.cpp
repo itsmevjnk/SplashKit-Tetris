@@ -5,16 +5,14 @@ int main() {
     window win = open_window(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
     clear_window(win, WINDOW_BG_COLOR);
 
-    /* test pieces */
-    for(int type = 0; type < 7; type++) {
-        for(int rotation = 0; rotation < 4; rotation++) {
-            draw_piece({piece_types[type], rotation, {rotation * 4, type * 4}});
-            refresh_screen();
-            delay(1000);
-        }
+    game_data game = new_game(); // set up new game
+
+    while(!quit_requested()) {
+        process_events();
+        handle_input(game);
+        update_game(game);
+        draw_game(game);
     }
 
-    
-    delay(10000);
     return 0;
 }

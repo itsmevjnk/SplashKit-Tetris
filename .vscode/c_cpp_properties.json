@@ -21,7 +21,6 @@
         },
         {
             "name": "Linux",
-            "compilerPath": "/usr/bin/g++",
             "includePath": [
                 "${workspaceRoot}",
                 "${workspaceRoot}/include/splashkit"

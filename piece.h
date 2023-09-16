@@ -3,7 +3,14 @@
 
 #include "splashkit.h"
 
+#define PIECE_ROW(bitmap, row)  ((bitmap >> ((row) * 4)) & 0x0F) // macro to extract the bitmap of a single row
+#define PIECE_COL(bitmap, col)  ( ((PIECE_ROW(bitmap, 0) & ((1 << (col)))) ? (1 << 0) : 0) \
+                                | ((PIECE_ROW(bitmap, 1) & ((1 << (col)))) ? (1 << 1) : 0) \
+                                | ((PIECE_ROW(bitmap, 2) & ((1 << (col)))) ? (1 << 2) : 0) \
+                                | ((PIECE_ROW(bitmap, 3) & ((1 << (col)))) ? (1 << 3) : 0)) // macro to extract the bitmap of a single column
+                                
 enum piece_colour {
+    NO_COLOUR,  // no colour (i.e. black)
     CYAN,       // I piece
     BLUE,       // J piece
     ORANGE,     // L piece
@@ -30,8 +37,9 @@ struct piece {
 
 extern const piece_type piece_types[7]; // NOTE: extern is used so that g++ wouldn't complain
 
-void draw_cell(piece_colour color, piece_position position, bool absolute = false);
-void draw_piece(piece p);
-void draw_piece(piece p, piece_position position, bool absolute = true);
+piece new_piece();
+void draw_cell(piece_colour color, const piece_position &position, bool absolute = false);
+void draw_piece(const piece &p);
+void draw_piece(const piece &p, const piece_position &position, bool absolute = true);
 
 #endif

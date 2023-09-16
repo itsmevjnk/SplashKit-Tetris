@@ -3,11 +3,57 @@
 
 using namespace std;
 
+#define FIELD_DRAW_X            (FIELD_X + FIELD_BORDER_WIDTH)
+#define FIELD_DRAW_Y            (FIELD_Y + FIELD_BORDER_WIDTH)
+
+/* generate a new random piece */
+piece new_piece() {
+    piece result;
+    
+    result.type = piece_types[rnd(6)]; // see piece_types.cpp
+    result.rotation = rnd(3); // there are 4 possible rotated variants for each piece, also see piece_types.cpp
+    
+    /* set piece's Y coordinate depending on its bottom border */
+    result.position.y = 0;
+    for(int y = 3; y > 0; y--) {
+        if(PIECE_ROW(result.type.bitmaps[result.rotation], y) == 0 && PIECE_ROW(result.type.bitmaps[result.rotation], y - 1) != 0) {
+            result.position.y = -y;
+            break;
+        }
+    }
+
+    /* find piece's X coordinate bounds */
+    int x_lower = 0, x_upper = FIELD_WIDTH - 4;
+    bool find_lower = (PIECE_COL(result.type.bitmaps[result.rotation], 0) == 0); // if the first column has a cell, we will just use the default value above
+    bool find_upper = (PIECE_COL(result.type.bitmaps[result.rotation], 3) == 0); // if the last column has a cell, we will just use the default value above
+    for(int x = 0; x < 3 && (find_lower || find_upper); x++) {
+        if(find_lower) {
+            /* find lower bound */
+            if(PIECE_COL(result.type.bitmaps[result.rotation], x) == 0 && PIECE_COL(result.type.bitmaps[result.rotation], x + 1) != 0) {
+                x_lower = -(x + 1);
+                find_lower = false;
+            }
+        }
+        
+        if(find_upper) {
+            /* find upper bound */
+            if(PIECE_COL(result.type.bitmaps[result.rotation], x) != 0 && PIECE_COL(result.type.bitmaps[result.rotation], x + 1) == 0) {
+                x_upper = FIELD_WIDTH - (x + 1);
+                find_upper = false;
+            }
+        }
+    }
+    result.position.x = rnd(x_lower, x_upper); // finally set X coordinate
+
+    return result;
+}
+
 /* draw a cell, given its colour and position, and (optionally) whether the position is absolute */
-void draw_cell(piece_colour p_color, piece_position position, bool absolute) {
+void draw_cell(piece_colour p_color, const piece_position &position, bool absolute) {
     /* resolve piece colour */
     color draw_color;
     switch(p_color) {
+        case NO_COLOUR: return; // nothing to be drawn
         case CYAN:
             draw_color = PIECE_COLOR_CYAN;
             break;
@@ -37,19 +83,20 @@ void draw_cell(piece_colour p_color, piece_position position, bool absolute) {
         x = position.x;
         y = position.y;
     } else {
-        x = FIELD_X + FIELD_BORDER_WIDTH + position.x * (PIECE_SIZE + 2 * PIECE_MARGIN) + PIECE_MARGIN;
-        y = FIELD_Y + FIELD_BORDER_WIDTH + position.y * (PIECE_SIZE + 2 * PIECE_MARGIN) + PIECE_MARGIN;
+        if(position.x < 0 || position.y < 0) return; // do not draw out of bound
+        x = FIELD_DRAW_X + FIELD_BORDER_WIDTH + position.x * (PIECE_SIZE + 2 * PIECE_MARGIN);
+        y = FIELD_DRAW_Y + FIELD_BORDER_WIDTH + position.y * (PIECE_SIZE + 2 * PIECE_MARGIN);
     }
 
     // write_line("Colour: " + color_to_string(draw_color) + ", x = " + to_string(x) + ", y = " + to_string(y));
 
     /* draw the cell itself */
     fill_rectangle(draw_color, x, y, PIECE_SIZE, PIECE_SIZE);
-    draw_rectangle(PIECE_BORDER_COLOR, x + PIECE_BORDER_WIDTH, y + PIECE_PADDING, PIECE_SIZE - 2 * PIECE_PADDING, PIECE_SIZE - 2 * PIECE_PADDING, option_line_width(PIECE_BORDER_WIDTH));
+    draw_rectangle(PIECE_BORDER_COLOR, x + PIECE_PADDING, y + PIECE_PADDING, PIECE_SIZE - 2 * PIECE_PADDING, PIECE_SIZE - 2 * PIECE_PADDING, option_line_width(PIECE_BORDER_WIDTH));
 }
 
 /* draw a piece */
-void draw_piece(piece p) {
+void draw_piece(const piece &p) {
     // write_line("Drawing piece " + to_string(p.type.p_color) + " @ x = " + to_string(p.position.x) + ", y = " + to_string(p.position.y) + ": " + dec_to_hex(p.type.bitmaps[p.rotation]));
     for(int y = 0; y < 4 && p.position.y + y < FIELD_HEIGHT; y++) {
         for(int x = 0; x < 4 && p.position.x + x < FIELD_WIDTH; x++) {
@@ -60,7 +107,7 @@ void draw_piece(piece p) {
 }
 
 /* draw a piece, with overriden XY coordinates (absolute by default) */
-void draw_piece(piece p, piece_position position, bool absolute) {
+void draw_piece(const piece &p, const piece_position &position, bool absolute) {
     for(int y = 0; y < 4 && (absolute || (p.position.y + y < FIELD_HEIGHT)); y++) {
         for(int x = 0; x < 4 && (absolute || (p.position.x + x < FIELD_WIDTH)); x++) {
             if(p.type.bitmaps[p.rotation] & (1 << (y * 4 + x))) {

@@ -4,6 +4,14 @@
 #include "piece.h"
 #include "config.h"
 
+enum game_input_action {
+    NO_INPUT,
+    MOVE_LEFT,
+    MOVE_RIGHT,
+    ROTATE,
+    FORCE_DOWN
+};
+
 struct game_data {
     int score;
     int level;
@@ -12,7 +20,11 @@ struct game_data {
     piece next_pieces[3];
     uint64_t frame_num;
     uint64_t frame_last_update;
+
+    /* input */
+    game_input_action last_input_action;
     uint64_t frame_last_input;
+
 };
 
 struct removed_rows {

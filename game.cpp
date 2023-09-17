@@ -6,7 +6,8 @@ game_data new_game() {
     game_data result;
 
     result.score = 0; result.level = 0;
-    result.frame_num = 0; result.frame_last_input = 0; result.frame_last_update = 0;
+    result.frame_num = 0; result.frame_last_update = 0;
+    result.last_input_action = NO_INPUT; result.frame_last_input = 0;
 
     result.falling_piece = new_piece();
     for(int i = 0; i < 3; i++) result.next_pieces[i] = new_piece();
@@ -89,23 +90,25 @@ uint8_t check_horiz_collision_overlap(const game_data &game, const piece &test_p
 /* handle game inputs */
 void handle_input(game_data &game) {
     uint64_t frame_delta = game.frame_num - game.frame_last_input;
-    if(frame_delta != 0 && frame_delta < (FRAME_RATE * SPEED_INPUT)) return; // we need time
 
-    if(key_down(LEFT_KEY)) { // move piece to the left
+    if(key_down(LEFT_KEY) && (game.last_input_action != MOVE_LEFT || frame_delta > FRAME_RATE * SPEED_INPUT_MOVE)) { // move piece to the left
+        game.last_input_action = MOVE_LEFT;
         game.frame_last_input = game.frame_num;
 
         if(!(check_collision(game) & COLLISION_LEFT))
             game.falling_piece.position.x--;
     }
 
-    if(key_down(RIGHT_KEY)) { // move piece to the right
+    if(key_down(RIGHT_KEY) && (game.last_input_action != MOVE_RIGHT || frame_delta > FRAME_RATE * SPEED_INPUT_MOVE)) { // move piece to the right
+        game.last_input_action = MOVE_RIGHT;
         game.frame_last_input = game.frame_num;
 
         if(!(check_collision(game) & COLLISION_RIGHT))
             game.falling_piece.position.x++;
     }
 
-    if(key_down(DOWN_KEY)) { // move piece down
+    if(key_down(DOWN_KEY) && (game.last_input_action != FORCE_DOWN || frame_delta > FRAME_RATE * SPEED_INPUT_FORCE_DOWN)) { // move piece down
+        game.last_input_action = FORCE_DOWN;
         game.frame_last_input = game.frame_num;
 
         if(!(check_collision(game) & COLLISION_BOTTOM)) {
@@ -114,7 +117,8 @@ void handle_input(game_data &game) {
         }
     }
 
-    if(key_down(UP_KEY)) { // rotate piece
+    if(key_down(UP_KEY) && (game.last_input_action != ROTATE || frame_delta > FRAME_RATE * SPEED_INPUT_ROTATE)) { // rotate piece
+        game.last_input_action = ROTATE;
         game.frame_last_input = game.frame_num;
 
         piece new_piece = game.falling_piece; // rotated piece

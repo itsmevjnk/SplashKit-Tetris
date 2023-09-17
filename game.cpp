@@ -60,7 +60,7 @@ uint8_t check_horiz_collision_overlap(const game_data &game, const piece &test_p
                 /* left edge detected */
                 int field_x = test_piece.position.x + x;
                 if(field_x < 0) result |= COLLISION_LEFT; // left edge is out of bounds
-                else for(int y = 0; y < 4 && test_piece.position.y + y < FIELD_HEIGHT; y++) {
+                else for(int y = ((test_piece.position.y < 0) ? (-test_piece.position.y) : 0); y < 4 && test_piece.position.y + y < FIELD_HEIGHT; y++) {
                     int field_y = test_piece.position.y + y;
                     if(game.playing_field[field_y][field_x] != NO_COLOUR) {
                         result |= COLLISION_LEFT;
@@ -73,7 +73,7 @@ uint8_t check_horiz_collision_overlap(const game_data &game, const piece &test_p
                 /* right edge detected */
                 int field_x = test_piece.position.x + x;
                 if(field_x >= FIELD_WIDTH) result |= COLLISION_RIGHT; // right edge is out of bounds
-                else for(int y = 0; y < 4 && test_piece.position.y + y < FIELD_HEIGHT; y++) {
+                else for(int y = ((test_piece.position.y < 0) ? (-test_piece.position.y) : 0); y < 4 && test_piece.position.y + y < FIELD_HEIGHT; y++) {
                     int field_y = test_piece.position.y + y;
                     if(game.playing_field[field_y][field_x] != NO_COLOUR) {
                         result |= COLLISION_RIGHT;

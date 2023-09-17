@@ -13,12 +13,15 @@ piece new_piece() {
     result.type = piece_types[rnd(6)]; // see piece_types.cpp
     result.rotation = rnd(3); // there are 4 possible rotated variants for each piece, also see piece_types.cpp
     
-    /* set piece's Y coordinate depending on its bottom border */
-    result.position.y = 0;
-    for(int y = 3; y > 0; y--) {
-        if(PIECE_ROW(result.type.bitmaps[result.rotation], y) == 0 && PIECE_ROW(result.type.bitmaps[result.rotation], y - 1) != 0) {
-            result.position.y = -y;
-            break;
+    /* set piece's Y coordinate depending on its bottom border - we want to keep the bottommost row off the canvas*/
+    result.position.y = -4;
+    if(PIECE_ROW(result.type.bitmaps[result.rotation], 3) == 0) {
+        /* last row is not blank, so we need to dig further up */
+        for(int y = 3; y > 0; y--) {
+            if(PIECE_ROW(result.type.bitmaps[result.rotation], y) == 0 && PIECE_ROW(result.type.bitmaps[result.rotation], y - 1) != 0) {
+                result.position.y = -y;
+                break;
+            }
         }
     }
 

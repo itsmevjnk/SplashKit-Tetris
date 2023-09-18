@@ -2,10 +2,10 @@
 #define GAME_H
 
 #include "splashkit.h"
+#include <bits/stdc++.h>
 
 #include "piece.h"
 #include "config.h"
-#include <deque>
 
 using namespace std;
 
@@ -52,9 +52,20 @@ struct removed_rows {
     int count;
 };
 
+struct collision_report {
+    set<int> rows;
+    set<int> rows_nceil; // without ceiling collisions
+    
+    set<int> columns;
+
+    /* to check for floor/ceiling and left/right side collisions, check for the below row/column indices against the above row/column sets */
+    int row_top, row_bottom;
+    int col_left, col_right;
+};
+
 game_data new_game();
-uint8_t check_collision(const game_data &game, const piece &test_piece);
-uint8_t check_collision(const game_data &game);
+collision_report check_collision(const game_data &game, const piece &test_piece);
+collision_report check_collision(const game_data &game);
 void handle_input(game_data &game);
 void draw_game(const game_data &game);
 void update_game(game_data &game);

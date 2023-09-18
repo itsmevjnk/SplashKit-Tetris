@@ -9,4 +9,13 @@
     "terminal.integrated.shellArgs.windows": [
         "--login"
     ],
+    "files.associations": {
+        "*.embeddedhtml": "html",
+        "array": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "utility": "cpp",
+        "*.tcc": "cpp",
+        "bitset": "cpp"
+    },
 }

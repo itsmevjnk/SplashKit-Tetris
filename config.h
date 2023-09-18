@@ -4,7 +4,9 @@
 #include "splashkit.h"
 
 /* debug definitions */
-// #define DEBUG_INPUT_REJECTIONS // print instances of input (move/rotate) rejections
+#define DEBUG_INPUT_REJECTIONS // print instances of input (move/rotate) rejections
+#define DEBUG_UNEXPECTED_COLLISIONS // print instances of unexpected collisions caught in update_game()
+// #define DEBUG_COLLISIONS
 
 /* game parameters */
 

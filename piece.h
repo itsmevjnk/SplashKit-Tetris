@@ -23,9 +23,15 @@ enum piece_colour {
     RED         // Z piece
 };
 
+struct piece_bitmap {
+    uint16_t bitmap;
+    uint8_t x, y; // coordinates of the top-left corner
+    uint8_t width, height;
+};
+
 struct piece_type {
     piece_colour p_color;
-    uint16_t bitmaps[4];
+    piece_bitmap bitmaps[4];
 };
 
 struct piece_position {
@@ -46,8 +52,6 @@ deque<piece> new_pieces(int n);
 void draw_cell(piece_colour color, const piece_position &position, bool absolute = false);
 void draw_piece(const piece &p);
 void draw_piece(const piece &p, const piece_position &position, bool absolute = true, bool tight = false);
-int piece_width(const piece &p);
-int piece_height(const piece &p);
 string piece_to_string(const piece &p);
 
 #endif

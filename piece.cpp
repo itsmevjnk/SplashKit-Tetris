@@ -13,40 +13,8 @@ piece new_piece() {
     result.type = piece_types[rnd(6)]; // see piece_types.cpp
     result.rotation = rnd(3); // there are 4 possible rotated variants for each piece, also see piece_types.cpp
     
-    /* set piece's Y coordinate depending on its bottom border - we want to keep the bottommost row off the canvas*/
-    result.position.y = -4;
-    if(PIECE_ROW(result.type.bitmaps[result.rotation], 3) == 0) {
-        /* last row is not blank, so we need to dig further up */
-        for(int y = 3; y > 0; y--) {
-            if(PIECE_ROW(result.type.bitmaps[result.rotation], y) == 0 && PIECE_ROW(result.type.bitmaps[result.rotation], y - 1) != 0) {
-                result.position.y = -y;
-                break;
-            }
-        }
-    }
-
-    /* find piece's X coordinate bounds */
-    int x_lower = 0, x_upper = FIELD_WIDTH - 4;
-    bool find_lower = (PIECE_COL(result.type.bitmaps[result.rotation], 0) == 0); // if the first column has a cell, we will just use the default value above
-    bool find_upper = (PIECE_COL(result.type.bitmaps[result.rotation], 3) == 0); // if the last column has a cell, we will just use the default value above
-    for(int x = 0; x < 3 && (find_lower || find_upper); x++) {
-        if(find_lower) {
-            /* find lower bound */
-            if(PIECE_COL(result.type.bitmaps[result.rotation], x) == 0 && PIECE_COL(result.type.bitmaps[result.rotation], x + 1) != 0) {
-                x_lower = -(x + 1);
-                find_lower = false;
-            }
-        }
-        
-        if(find_upper) {
-            /* find upper bound */
-            if(PIECE_COL(result.type.bitmaps[result.rotation], x) != 0 && PIECE_COL(result.type.bitmaps[result.rotation], x + 1) == 0) {
-                x_upper = FIELD_WIDTH - (x + 1);
-                find_upper = false;
-            }
-        }
-    }
-    result.position.x = rnd(x_lower, x_upper); // finally set X coordinate
+    result.position.y = -result.type.bitmaps[result.rotation].height;
+    result.position.x = rnd(-result.type.bitmaps[result.rotation].x, FIELD_WIDTH - (result.type.bitmaps[result.rotation].x + result.type.bitmaps[result.rotation].width));
 
     return result;
 }
@@ -128,10 +96,9 @@ void draw_cell(piece_colour p_color, const piece_position &position, bool absolu
 
 /* draw a piece */
 void draw_piece(const piece &p) {
-    // write_line("Drawing piece " + to_string(p.type.p_color) + " @ x = " + to_string(p.position.x) + ", y = " + to_string(p.position.y) + ": " + dec_to_hex(p.type.bitmaps[p.rotation]));
     for(int y = 0; y < 4 && p.position.y + y < FIELD_HEIGHT; y++) {
         for(int x = 0; x < 4 && p.position.x + x < FIELD_WIDTH; x++) {
-            if(p.type.bitmaps[p.rotation] & (1 << (y * 4 + x)))
+            if(p.type.bitmaps[p.rotation].bitmap & (1 << (y * 4 + x)))
                 draw_cell(p.type.p_color, {(p.position.x + x), (p.position.y + y)});
         }
     }
@@ -140,66 +107,20 @@ void draw_piece(const piece &p) {
 /* draw a piece, with overriden XY coordinates (absolute by default), and optionally use the XY coordinates as the start of the actual cell (tight drawing) */
 void draw_piece(const piece &p, const piece_position &position, bool absolute, bool tight) {
     int cell_y = position.y;
-    int dy = (absolute) ? PIECE_TOTAL_SIZE : 1; // cell_y increment step
 
-    for(int y = 0; y < 4 && (absolute || tight || (cell_y < FIELD_HEIGHT)); y++) {
+    int d = (absolute) ? PIECE_TOTAL_SIZE : 1; // cell_x/y increment step
+
+    int y0 = (tight) ? p.type.bitmaps[p.rotation].y : 0;
+    for(int y = y0; y - y0 < ((tight) ? p.type.bitmaps[p.rotation].height : 4) && (absolute || (cell_y < FIELD_HEIGHT)); y++, cell_y += d) {
         int cell_x = position.x;
 
-        bool empty_row = (PIECE_ROW(p.type.bitmaps[p.rotation], y) == 0);
-
-        if(!tight || !empty_row) {
-            /* only draw this row if either tight drawing is not enabled or the row is not empty */
-            for(int x = 0; x < 4 && (absolute || tight || (cell_x < FIELD_WIDTH)); x++) {
-                bool empty_col = (PIECE_COL(p.type.bitmaps[p.rotation], x) == 0); // only needed for tight drawing
-
-                if(p.type.bitmaps[p.rotation] & (1 << (y * 4 + x))) {
-                    draw_cell(p.type.p_color, {cell_x, cell_y}, absolute);
-                }
-
-                if(!empty_col) cell_x += (absolute) ? PIECE_TOTAL_SIZE : 1;
+        int x0 = (tight) ? p.type.bitmaps[p.rotation].x : 0;
+        for(int x = x0; x - x0 < ((tight) ? p.type.bitmaps[p.rotation].width : 4) && (absolute || (cell_x < FIELD_WIDTH)); x++, cell_x += d) {
+            if(p.type.bitmaps[p.rotation].bitmap & (1 << (y * 4 + x))) {
+                draw_cell(p.type.p_color, {cell_x, cell_y}, absolute);
             }
-
-            cell_y += dy;
         }
     }
-}
-
-/* get a piece's width */
-int piece_width(const piece &p) {
-    bool in_piece = false; // set when we have entered a piece
-    int result = 0;
-
-    for(int x = 0; x < 4; x++) {
-        if(PIECE_COL(p.type.bitmaps[p.rotation], x) != 0) {
-            /* there is a cell in here */
-            if(!in_piece) in_piece = true;
-            result++;
-        } else {
-            /* there are no cells - if in_piece is true, it means we are no longer in the piece */
-            if(in_piece) break; // just exit here
-        }
-    }
-
-    return result;
-}
-
-/* get a piece's height */
-int piece_height(const piece &p) {
-    bool in_piece = false; // set when we have entered a piece
-    int result = 0;
-
-    for(int y = 0; y < 4; y++) {
-        if(PIECE_ROW(p.type.bitmaps[p.rotation], y) != 0) {
-            /* there is a cell in here */
-            if(!in_piece) in_piece = true;
-            result++;
-        } else {
-            /* there are no cells - if in_piece is true, it means we are no longer in the piece */
-            if(in_piece) break; // just exit here
-        }
-    }
-
-    return result;
 }
 
 /* FOR DEBUGGING - get a descriptive string of a piece */

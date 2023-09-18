@@ -64,6 +64,11 @@
 #define SPEED_INPUT_FORCE_DOWN          0.05
 #define SPEED_INPUT_ROTATE              0.25
 
+#define GAME_OVER_FILL_RATE             10 // row filling rate (in rows per second)
+#define GAME_OVER_FILL_COLOR            RED // from enum piece_colour
+// #define GAME_OVER_FILL_FROM_BOTTOM // comment this to fill from top
+#define GAME_OVER_TEXT_SIZE             18
+
 /* DERIVED VALUES */
 #define FIELD_WIDTH_PX                  (FIELD_WIDTH * (PIECE_SIZE + 2 * PIECE_MARGIN))
 #define FIELD_HEIGHT_PX                 (FIELD_HEIGHT * (PIECE_SIZE + 2 * PIECE_MARGIN))

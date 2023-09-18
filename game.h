@@ -35,6 +35,7 @@ struct game_data {
     int level;
     piece_colour playing_field[FIELD_HEIGHT][FIELD_WIDTH];
     deque<piece> next_pieces;
+
     uint64_t frame_num;
     uint64_t frame_last_update;
 
@@ -45,6 +46,10 @@ struct game_data {
     /* HUD */
     hud_drawing_options hud_options;
 
+    /* game over */
+    bool game_over;
+    bool game_over_filled;
+    uint64_t frame_game_over;
 };
 
 struct removed_rows {
@@ -55,7 +60,7 @@ struct removed_rows {
 game_data new_game();
 uint8_t check_collision(const game_data &game, const piece &test_piece);
 uint8_t check_collision(const game_data &game);
-void handle_input(game_data &game);
+bool handle_input(game_data &game);
 void draw_game(const game_data &game);
 void update_game(game_data &game);
 

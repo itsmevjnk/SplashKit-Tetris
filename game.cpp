@@ -14,6 +14,8 @@ game_data new_game() {
     result.frame_num = 0; result.frame_last_update = 0;
     result.last_input_action = NO_INPUT; result.frame_last_input = 0;
 
+    result.game_over = false; result.game_over_filled = false;
+
     result.next_pieces = new_pieces(NEXT_PIECES_CNT);
     
     for(int y = 0; y < FIELD_HEIGHT; y++) {
@@ -98,70 +100,76 @@ uint8_t check_collision(const game_data &game) {
 }
 
 /* handle game inputs */
-void handle_input(game_data &game) {
-    uint64_t frame_delta = game.frame_num - game.frame_last_input;
+bool handle_input(game_data &game) {
+    if(game.game_over) {
+        return !key_down(RETURN_KEY); // only check if the RETURN key is pressed; if it is, then we start a new game
+    } else {
+        uint64_t frame_delta = game.frame_num - game.frame_last_input;
 
-    if(key_down(LEFT_KEY) && (game.last_input_action != MOVE_LEFT || frame_delta > FRAME_RATE * SPEED_INPUT_MOVE)) { // move piece to the left
-        game.last_input_action = MOVE_LEFT;
-        game.frame_last_input = game.frame_num;
+        if(key_down(LEFT_KEY) && (game.last_input_action != MOVE_LEFT || frame_delta > FRAME_RATE * SPEED_INPUT_MOVE)) { // move piece to the left
+            game.last_input_action = MOVE_LEFT;
+            game.frame_last_input = game.frame_num;
 
-        game.next_pieces[0].position.x--; // try shifting it to the left for testing
-        if(check_collision(game) & COLLISION_LEFT) {
-            game.next_pieces[0].position.x++;
+            game.next_pieces[0].position.x--; // try shifting it to the left for testing
+            if(check_collision(game) & COLLISION_LEFT) {
+                game.next_pieces[0].position.x++;
 #ifdef DEBUG_INPUT_REJECTIONS
-            write_line("Left move rejected for " + piece_to_string(game.next_pieces[0]));
+                write_line("Left move rejected for " + piece_to_string(game.next_pieces[0]));
 #endif
-        }
-    }
-
-    if(key_down(RIGHT_KEY) && (game.last_input_action != MOVE_RIGHT || frame_delta > FRAME_RATE * SPEED_INPUT_MOVE)) { // move piece to the right
-        game.last_input_action = MOVE_RIGHT;
-        game.frame_last_input = game.frame_num;
-
-        game.next_pieces[0].position.x++;
-        if(check_collision(game) & COLLISION_RIGHT) {
-            game.next_pieces[0].position.x--;
-#ifdef DEBUG_INPUT_REJECTIONS
-            write_line("Right move rejected for " + piece_to_string(game.next_pieces[0]));
-#endif
-        }
-    }
-
-    if(key_down(DOWN_KEY) && (game.last_input_action != FORCE_DOWN || frame_delta > FRAME_RATE * SPEED_INPUT_FORCE_DOWN)) { // move piece down
-        game.last_input_action = FORCE_DOWN;
-        game.frame_last_input = game.frame_num;
-
-        game.next_pieces[0].position.y++;
-        if(check_collision(game) & COLLISION_BOTTOM) {
-            game.next_pieces[0].position.y--;
-#ifdef DEBUG_INPUT_REJECTIONS
-            write_line("Down move rejected for " + piece_to_string(game.next_pieces[0]));
-#endif
-        } else game.score += SCORE_FORCE_DOWN;
-    }
-
-    if(key_down(UP_KEY) && (game.last_input_action != ROTATE || frame_delta > FRAME_RATE * SPEED_INPUT_ROTATE)) { // rotate piece
-        game.last_input_action = ROTATE;
-        game.frame_last_input = game.frame_num;
-
-        piece new_piece = game.next_pieces[0]; // rotated piece
-        new_piece.rotation = (new_piece.rotation + 1) % 4;
-
-        if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) game.next_pieces[0] = new_piece; // ignore ceiling collision
-        else {
-            /* attempt wall kicking */
-            bool ok = false; // set if the piece fits
-            new_piece.position.x++; // right kick
-            if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) ok = true;
-            else {
-                new_piece.position.x -= 2; // left kick
-                if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) ok = true;
             }
-            if(ok) game.next_pieces[0] = new_piece;
-#ifdef DEBUG_INPUT_REJECTIONS
-            else write_line("Rotation rejected for " + piece_to_string(game.next_pieces[0]));
-#endif
         }
+
+        if(key_down(RIGHT_KEY) && (game.last_input_action != MOVE_RIGHT || frame_delta > FRAME_RATE * SPEED_INPUT_MOVE)) { // move piece to the right
+            game.last_input_action = MOVE_RIGHT;
+            game.frame_last_input = game.frame_num;
+
+            game.next_pieces[0].position.x++;
+            if(check_collision(game) & COLLISION_RIGHT) {
+                game.next_pieces[0].position.x--;
+#ifdef DEBUG_INPUT_REJECTIONS
+                write_line("Right move rejected for " + piece_to_string(game.next_pieces[0]));
+#endif
+            }
+        }
+
+        if(key_down(DOWN_KEY) && (game.last_input_action != FORCE_DOWN || frame_delta > FRAME_RATE * SPEED_INPUT_FORCE_DOWN)) { // move piece down
+            game.last_input_action = FORCE_DOWN;
+            game.frame_last_input = game.frame_num;
+
+            game.next_pieces[0].position.y++;
+            if(check_collision(game) & COLLISION_BOTTOM) {
+                game.next_pieces[0].position.y--;
+#ifdef DEBUG_INPUT_REJECTIONS
+                write_line("Down move rejected for " + piece_to_string(game.next_pieces[0]));
+#endif
+            } else game.score += SCORE_FORCE_DOWN;
+        }
+
+        if(key_down(UP_KEY) && (game.last_input_action != ROTATE || frame_delta > FRAME_RATE * SPEED_INPUT_ROTATE)) { // rotate piece
+            game.last_input_action = ROTATE;
+            game.frame_last_input = game.frame_num;
+
+            piece new_piece = game.next_pieces[0]; // rotated piece
+            new_piece.rotation = (new_piece.rotation + 1) % 4;
+
+            if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) game.next_pieces[0] = new_piece; // ignore ceiling collision
+            else {
+                /* attempt wall kicking */
+                bool ok = false; // set if the piece fits
+                new_piece.position.x++; // right kick
+                if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) ok = true;
+                else {
+                    new_piece.position.x -= 2; // left kick
+                    if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) ok = true;
+                }
+                if(ok) game.next_pieces[0] = new_piece;
+#ifdef DEBUG_INPUT_REJECTIONS
+                else write_line("Rotation rejected for " + piece_to_string(game.next_pieces[0]));
+#endif
+            }
+        }
+
+        return true;
     }
 }
 
@@ -211,9 +219,29 @@ void draw_hud(const game_data &game) {
     }
 }
 
+/* draw the game over screen */
+void draw_game_over(const game_data &game) {
+    /* we want to center the text, so we will need to calculate where to put it */
+    int width = text_width("GAME OVER", game.hud_options.hud_font, GAME_OVER_TEXT_SIZE);
+    int height = text_height("GAME OVER", game.hud_options.hud_font, GAME_OVER_TEXT_SIZE);
+    int x = FIELD_X + (FIELD_WIDTH_PX - width) / 2;
+    int y = FIELD_Y + FIELD_HEIGHT_PX / 2 - height;
+    fill_rectangle(FIELD_BG_COLOR, x, y, width, height);
+    draw_text("GAME OVER", HUD_TEXT_COLOR, game.hud_options.hud_font, GAME_OVER_TEXT_SIZE, x, y);
+
+    width = text_width("Press ENTER to restart", game.hud_options.hud_font, GAME_OVER_TEXT_SIZE);
+    height = text_height("Press ENTER to restart", game.hud_options.hud_font, GAME_OVER_TEXT_SIZE);
+    x = FIELD_X + (FIELD_WIDTH_PX - width) / 2;
+    y = FIELD_Y + FIELD_HEIGHT_PX / 2;
+    fill_rectangle(FIELD_BG_COLOR, x, y, width, height);
+    draw_text("Press ENTER to restart", HUD_TEXT_COLOR, game.hud_options.hud_font, GAME_OVER_TEXT_SIZE, x, y);
+}
+
 /* draw entire game */
 void draw_game(const game_data &game) {
     draw_field(game);
+    if(game.game_over_filled) draw_game_over(game);
+
     draw_hud(game);
 
     refresh_screen(FRAME_RATE);
@@ -221,10 +249,14 @@ void draw_game(const game_data &game) {
 
 /* merge falling piece into playing field */
 void merge_piece(game_data &game) {
-    for(int y = 0; y < 4; y++) {
-        for(int x = 0; x < 4; x++) {
+    int field_y = game.next_pieces[0].position.y;
+    for(int y = 0; y < 4; y++, field_y++) {
+        if(field_y < 0 || field_y >= FIELD_HEIGHT) continue; // skip through out of bound rows
+        int field_x = game.next_pieces[0].position.x;
+        for(int x = 0; x < 4; x++, field_x++) {
+            if(field_x < 0 || field_x >= FIELD_WIDTH) continue; // skip through out of bound cells
             if(PIECE_ROW(game.next_pieces[0].type->bitmaps[game.next_pieces[0].rotation].bitmap, y) & (1 << x))
-                game.playing_field[game.next_pieces[0].position.y + y][game.next_pieces[0].position.x + x] = game.next_pieces[0].type->p_color;
+                game.playing_field[field_y][field_x] = game.next_pieces[0].type->p_color;
         }
     }
 }
@@ -311,24 +343,62 @@ void next_piece(game_data &game) {
     game.next_pieces.pop_front();
 }
 
+/* check for game over condition */
+bool check_game_over(const game_data &game) {
+    return (game.next_pieces[0].position.y + game.next_pieces[0].type->bitmaps[game.next_pieces[0].rotation].y < 0); // if collision happened with part of the piece above the border
+}
+
 /* update game state */
 void update_game(game_data &game) {
-    uint64_t frame_delta = game.frame_num - game.frame_last_update; // difference from frame number of last update to current frame number
+    if(game.game_over) {
+        if(!game.game_over_filled) {
+            int64_t frame_delta = game.frame_num - game.frame_game_over;
+        
+            if((frame_delta > 0) && (frame_delta % (uint64_t)(FRAME_RATE / GAME_OVER_FILL_RATE) == 0)) {
+#ifdef GAME_OVER_FILL_FROM_BOTTOM
+                int row = FIELD_HEIGHT - (frame_delta / (uint64_t)(FRAME_RATE / GAME_OVER_FILL_RATE) - 1);
+                if(row < 0) {
 
-    if((frame_delta > 0) && (frame_delta % (uint64_t)(FRAME_RATE / (SPEED_BASE + game.level * SPEED_STEP)) == 0)) {
-        /* it's updating time */
-        game.next_pieces[0].position.y++; // descend falling piece
-        if(check_collision(game) & COLLISION_BOTTOM) {
-            /* falling piece is touching a cell */
-            game.next_pieces[0].position.y--; // pulll it back up
-            merge_piece(game); // merge piece into the playing field
-            next_piece(game); // pop next piece out
-            removed_rows rows = remove_full_rows(game); // find and remove full rows
-            award_score(game, rows); // then award score to player
+#else
+                int row = frame_delta / (uint64_t)(FRAME_RATE / GAME_OVER_FILL_RATE) - 1;
+                if(row >= FIELD_HEIGHT) {
+#endif
+                    // we're overfilling
+                    game.game_over_filled = true;
+                    return;
+                }
+
+                for(int x = 0; x < FIELD_WIDTH; x++) game.playing_field[row][x] = GAME_OVER_FILL_COLOR; // fill the row
+            }
         }
+    } else {
+        uint64_t frame_delta = game.frame_num - game.frame_last_update; // difference from frame number of last update to current frame number
 
-        game.frame_last_update = game.frame_num;
+        if((frame_delta > 0) && (frame_delta % (uint64_t)(FRAME_RATE / (SPEED_BASE + game.level * SPEED_STEP)) == 0)) {
+            /* it's updating time */
+            game.next_pieces[0].position.y++; // descend falling piece
+            if(check_collision(game) & COLLISION_BOTTOM) {
+                /* falling piece is touching a cell */
+                game.next_pieces[0].position.y--; // pull it back up
+                merge_piece(game); // merge piece into the playing field
+                game.game_over = check_game_over(game); // check for game over condition
+                next_piece(game); // pop next piece out
+
+                if(game.game_over) {
+                    /* game over */
+                    game.frame_game_over = game.frame_num + (uint64_t)(FRAME_RATE / (SPEED_BASE + game.level * SPEED_STEP)); // we want the game to freeze for a bit
+                    goto advance_frame; // we'll be back on the next frame
+                } else {
+                    /* the game's still progressing */
+                    removed_rows rows = remove_full_rows(game); // find and remove full rows
+                    award_score(game, rows); // then award score to player
+                }
+            }
+
+            game.frame_last_update = game.frame_num;
+        }
     }
 
+advance_frame:
     game.frame_num++; // advance to next frame
 }

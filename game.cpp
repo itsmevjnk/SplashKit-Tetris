@@ -63,23 +63,29 @@ game_data new_game() {
     return result;
 }
 
-/* check collision between the falling piece and its surrounding field */
+/* check collision (overlaps) between the falling piece and its surrounding field */
 #define COLLISION_LEFT          (1 << 0)
 #define COLLISION_RIGHT         (1 << 1)
-#define COLLISION_BOTTOM        (1 << 2)
+#define COLLISION_CEILING       (1 << 2)
+#define COLLISION_BOTTOM        (1 << 3) // or floor
 
 uint8_t check_collision(const game_data &game, const piece &test_piece) {
     uint8_t result = 0;
-    
-    for(int y = 0; y < 4; y++) {
-        for(int x = 0; x < 4; x++) {
+
+    int field_y = test_piece.position.y + test_piece.type->bitmaps[test_piece.rotation].y;
+    for(int y = test_piece.type->bitmaps[test_piece.rotation].y; y < test_piece.type->bitmaps[test_piece.rotation].y + test_piece.type->bitmaps[test_piece.rotation].height; y++, field_y++) {
+        int field_x = test_piece.position.x + test_piece.type->bitmaps[test_piece.rotation].x;
+        if(field_y < 0) result |= COLLISION_CEILING; // definitely ceiling collision; the cell is above the upper bound of the playing field
+        else if(field_y >= FIELD_HEIGHT) result |= COLLISION_BOTTOM; // definitely floor collision; the cell is below the lower bound of the playing field
+        for(int x = test_piece.type->bitmaps[test_piece.rotation].x; x < test_piece.type->bitmaps[test_piece.rotation].x + test_piece.type->bitmaps[test_piece.rotation].width; x++, field_x++) {
             if(test_piece.type->bitmaps[test_piece.rotation].bitmap & (1 << (y * 4 + x))) {
-                /* there is a cell - go check it out */
-                int field_x = test_piece.position.x + x, field_y = test_piece.position.y + y;
-                // if(field_y < 0 || field_x < 0) continue; // still out of bounds - nothing to check
-                if(field_y == FIELD_HEIGHT - 1 || (field_y >= -1 && game.playing_field[field_y + 1][field_x] != NO_COLOUR)) result |= COLLISION_BOTTOM; // bottom collision
-                if(field_x <= 0 || (field_y >= 0 && game.playing_field[field_y][field_x - 1] != NO_COLOUR)) result |= COLLISION_LEFT; // left collision
-                if(field_x >= FIELD_WIDTH - 1 || (field_y >= 0 && game.playing_field[field_y][field_x + 1] != NO_COLOUR)) result |= COLLISION_RIGHT; // right collision
+                /* there is a cell, so let's check here */
+                if(field_x < 0) result |= COLLISION_LEFT; // definitely left collision
+                else if(field_x >= FIELD_WIDTH) result |= COLLISION_RIGHT; // definitely right collision
+                else {
+                    /* the cell is within playing field bounds */
+                    if(field_y >= 0 && field_y < FIELD_HEIGHT && game.playing_field[field_y][field_x] != NO_COLOUR) result |= COLLISION_LEFT | COLLISION_RIGHT | COLLISION_BOTTOM; // the caller will figure out what this really is
+                }
             }
         }
     }
@@ -91,35 +97,6 @@ uint8_t check_collision(const game_data &game) {
     return check_collision(game, game.next_pieces[0]);
 }
 
-/* detect horizontal collision/overlaps, used for wall kicks */
-uint8_t check_horiz_collision_overlap(const game_data &game, const piece &test_piece) {
-    uint8_t result = 0;
-
-    /* test left edge */
-    int field_x = test_piece.position.x + test_piece.type->bitmaps[test_piece.rotation].x;
-    if(field_x < 0) result |= COLLISION_LEFT; // left edge is out of bounds
-    else for(int y = MAX(-test_piece.position.y, 0); y < 4 && test_piece.position.y + y < FIELD_HEIGHT; y++) {
-        int field_y = test_piece.position.y + y;
-        if(game.playing_field[field_y][field_x] != NO_COLOUR) {
-            result |= COLLISION_LEFT;
-            break;
-        }
-    }
-
-    /* test right edge */
-    field_x += test_piece.type->bitmaps[test_piece.rotation].width - 1;
-    if(field_x >= FIELD_WIDTH) result |= COLLISION_RIGHT; // right edge is out of bounds
-    else for(int y = MAX(-test_piece.position.y, 0); y < 4 && test_piece.position.y + y < FIELD_HEIGHT; y++) {
-        int field_y = test_piece.position.y + y;
-        if(game.playing_field[field_y][field_x] != NO_COLOUR) {
-            result |= COLLISION_RIGHT;
-            break;
-        }
-    }
-
-    return result;
-}
-
 /* handle game inputs */
 void handle_input(game_data &game) {
     uint64_t frame_delta = game.frame_num - game.frame_last_input;
@@ -128,38 +105,39 @@ void handle_input(game_data &game) {
         game.last_input_action = MOVE_LEFT;
         game.frame_last_input = game.frame_num;
 
-        if(!(check_collision(game) & COLLISION_LEFT))
-            game.next_pieces[0].position.x--;
+        game.next_pieces[0].position.x--; // try shifting it to the left for testing
+        if(check_collision(game) & COLLISION_LEFT) {
+            game.next_pieces[0].position.x++;
 #ifdef DEBUG_INPUT_REJECTIONS
-        else
             write_line("Left move rejected for " + piece_to_string(game.next_pieces[0]));
 #endif
+        }
     }
 
     if(key_down(RIGHT_KEY) && (game.last_input_action != MOVE_RIGHT || frame_delta > FRAME_RATE * SPEED_INPUT_MOVE)) { // move piece to the right
         game.last_input_action = MOVE_RIGHT;
         game.frame_last_input = game.frame_num;
 
-        if(!(check_collision(game) & COLLISION_RIGHT))
-            game.next_pieces[0].position.x++;
+        game.next_pieces[0].position.x++;
+        if(check_collision(game) & COLLISION_RIGHT) {
+            game.next_pieces[0].position.x--;
 #ifdef DEBUG_INPUT_REJECTIONS
-        else
             write_line("Right move rejected for " + piece_to_string(game.next_pieces[0]));
 #endif
+        }
     }
 
     if(key_down(DOWN_KEY) && (game.last_input_action != FORCE_DOWN || frame_delta > FRAME_RATE * SPEED_INPUT_FORCE_DOWN)) { // move piece down
         game.last_input_action = FORCE_DOWN;
         game.frame_last_input = game.frame_num;
 
-        if(!(check_collision(game) & COLLISION_BOTTOM)) {
-            game.next_pieces[0].position.y++;
-            game.score += SCORE_FORCE_DOWN;
-        }
+        game.next_pieces[0].position.y++;
+        if(check_collision(game) & COLLISION_BOTTOM) {
+            game.next_pieces[0].position.y--;
 #ifdef DEBUG_INPUT_REJECTIONS
-        else
             write_line("Down move rejected for " + piece_to_string(game.next_pieces[0]));
 #endif
+        } else game.score += SCORE_FORCE_DOWN;
     }
 
     if(key_down(UP_KEY) && (game.last_input_action != ROTATE || frame_delta > FRAME_RATE * SPEED_INPUT_ROTATE)) { // rotate piece
@@ -169,28 +147,21 @@ void handle_input(game_data &game) {
         piece new_piece = game.next_pieces[0]; // rotated piece
         new_piece.rotation = (new_piece.rotation + 1) % 4;
 
-        /* check for overlaps/wall kicks */
-        uint8_t check = check_horiz_collision_overlap(game, new_piece);
-        if(check != (COLLISION_LEFT | COLLISION_RIGHT)) {
-            /* if we have a collision on both the left and right sides, it means our new piece is blocked by other cells */
-            bool ok = true; // set if we can place the piece (optionally after wall kicking)
-
-            if(check & COLLISION_LEFT) {
-                /* rightward kick and try again */
-                new_piece.position.x++;
-                ok = (check_horiz_collision_overlap(game, new_piece) == 0);
-            } else if(check & COLLISION_RIGHT) {
-                /* leftward kick and try again */
-                new_piece.position.x--;
-                ok = (check_horiz_collision_overlap(game, new_piece) == 0);
+        if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) game.next_pieces[0] = new_piece; // ignore ceiling collision
+        else {
+            /* attempt wall kicking */
+            bool ok = false; // set if the piece fits
+            new_piece.position.x++; // right kick
+            if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) ok = true;
+            else {
+                new_piece.position.x -= 2; // left kick
+                if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) ok = true;
             }
-
-            if(ok) game.next_pieces[0] = new_piece; // any problems have been corrected, and we can now place our piece
-        }
+            if(ok) game.next_pieces[0] = new_piece;
 #ifdef DEBUG_INPUT_REJECTIONS
-        else
-            write_line("Rotation rejected for " + piece_to_string(game.next_pieces[0]));
+            else write_line("Rotation rejected for " + piece_to_string(game.next_pieces[0]));
 #endif
+        }
     }
 }
 
@@ -346,14 +317,14 @@ void update_game(game_data &game) {
 
     if((frame_delta > 0) && (frame_delta % (uint64_t)(FRAME_RATE / (SPEED_BASE + game.level * SPEED_STEP)) == 0)) {
         /* it's updating time */
+        game.next_pieces[0].position.y++; // descend falling piece
         if(check_collision(game) & COLLISION_BOTTOM) {
             /* falling piece is touching a cell */
+            game.next_pieces[0].position.y--; // pulll it back up
             merge_piece(game); // merge piece into the playing field
             next_piece(game); // pop next piece out
             removed_rows rows = remove_full_rows(game); // find and remove full rows
             award_score(game, rows); // then award score to player
-        } else {
-            game.next_pieces[0].position.y++; // descend falling piece
         }
 
         game.frame_last_update = game.frame_num;

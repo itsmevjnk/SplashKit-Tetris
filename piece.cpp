@@ -201,3 +201,19 @@ int piece_height(const piece &p) {
 
     return result;
 }
+
+/* FOR DEBUGGING - get a descriptive string of a piece */
+string piece_to_string(const piece &p) {
+    string type = "Unknown";
+    switch(p.type.p_color) {
+        case CYAN: type = "I"; break;
+        case BLUE: type = "J"; break;
+        case ORANGE: type = "L"; break;
+        case YELLOW: type = "O"; break;
+        case GREEN: type = "S"; break;
+        case PURPLE: type = "T"; break;
+        case RED: type = "Z"; break;
+        default: break;
+    }
+    return type + " piece (rotation " + to_string(p.rotation) + ") @ (" + to_string(p.position.x) + "," + to_string(p.position.y) + ")";
+}

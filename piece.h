@@ -48,5 +48,6 @@ void draw_piece(const piece &p);
 void draw_piece(const piece &p, const piece_position &position, bool absolute = true, bool tight = false);
 int piece_width(const piece &p);
 int piece_height(const piece &p);
+string piece_to_string(const piece &p);
 
 #endif

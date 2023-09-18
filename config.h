@@ -3,6 +3,11 @@
 
 #include "splashkit.h"
 
+/* debug definitions */
+// #define DEBUG_INPUT_REJECTIONS // print instances of input (move/rotate) rejections
+
+/* game parameters */
+
 #define WINDOW_TITLE                    "Tetris"
 #define WINDOW_WIDTH                    640
 #define WINDOW_HEIGHT                   480

@@ -76,10 +76,10 @@ uint8_t check_collision(const game_data &game, const piece &test_piece) {
             if(test_piece.type.bitmaps[test_piece.rotation] & (1 << (y * 4 + x))) {
                 /* there is a cell - go check it out */
                 int field_x = test_piece.position.x + x, field_y = test_piece.position.y + y;
-                if(field_y < 0 || field_x < 0) continue; // still out of bounds - nothing to check
-                if(field_y == FIELD_HEIGHT - 1 || game.playing_field[field_y + 1][field_x] != NO_COLOUR) result |= COLLISION_BOTTOM; // bottom collision
-                if(field_x == 0 || game.playing_field[field_y][field_x - 1] != NO_COLOUR) result |= COLLISION_LEFT; // left collision
-                if(field_x == FIELD_WIDTH - 1 || game.playing_field[field_y][field_x + 1] != NO_COLOUR) result |= COLLISION_RIGHT; // right collision
+                // if(field_y < 0 || field_x < 0) continue; // still out of bounds - nothing to check
+                if(field_y == FIELD_HEIGHT - 1 || (field_y >= -1 && game.playing_field[field_y + 1][field_x] != NO_COLOUR)) result |= COLLISION_BOTTOM; // bottom collision
+                if(field_x <= 0 || (field_y >= 0 && game.playing_field[field_y][field_x - 1] != NO_COLOUR)) result |= COLLISION_LEFT; // left collision
+                if(field_x >= FIELD_WIDTH - 1 || (field_y >= 0 && game.playing_field[field_y][field_x + 1] != NO_COLOUR)) result |= COLLISION_RIGHT; // right collision
             }
         }
     }
@@ -140,6 +140,10 @@ void handle_input(game_data &game) {
 
         if(!(check_collision(game) & COLLISION_LEFT))
             game.next_pieces[0].position.x--;
+#ifdef DEBUG_INPUT_REJECTIONS
+        else
+            write_line("Left move rejected for " + piece_to_string(game.next_pieces[0]));
+#endif
     }
 
     if(key_down(RIGHT_KEY) && (game.last_input_action != MOVE_RIGHT || frame_delta > FRAME_RATE * SPEED_INPUT_MOVE)) { // move piece to the right
@@ -148,6 +152,10 @@ void handle_input(game_data &game) {
 
         if(!(check_collision(game) & COLLISION_RIGHT))
             game.next_pieces[0].position.x++;
+#ifdef DEBUG_INPUT_REJECTIONS
+        else
+            write_line("Right move rejected for " + piece_to_string(game.next_pieces[0]));
+#endif
     }
 
     if(key_down(DOWN_KEY) && (game.last_input_action != FORCE_DOWN || frame_delta > FRAME_RATE * SPEED_INPUT_FORCE_DOWN)) { // move piece down
@@ -158,6 +166,10 @@ void handle_input(game_data &game) {
             game.next_pieces[0].position.y++;
             game.score += SCORE_FORCE_DOWN;
         }
+#ifdef DEBUG_INPUT_REJECTIONS
+        else
+            write_line("Down move rejected for " + piece_to_string(game.next_pieces[0]));
+#endif
     }
 
     if(key_down(UP_KEY) && (game.last_input_action != ROTATE || frame_delta > FRAME_RATE * SPEED_INPUT_ROTATE)) { // rotate piece
@@ -185,6 +197,10 @@ void handle_input(game_data &game) {
 
             if(ok) game.next_pieces[0] = new_piece; // any problems have been corrected, and we can now place our piece
         }
+#ifdef DEBUG_INPUT_REJECTIONS
+        else
+            write_line("Rotation rejected for " + piece_to_string(game.next_pieces[0]));
+#endif
     }
 }
 

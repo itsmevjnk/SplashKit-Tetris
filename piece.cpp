@@ -13,7 +13,7 @@ piece new_piece() {
     result.type = &piece_types[rnd(6)]; // see piece_types.cpp
     result.rotation = rnd(3); // there are 4 possible rotated variants for each piece, also see piece_types.cpp
     
-    result.position.y = -result.type->bitmaps[result.rotation].height;
+    result.position.y = -(result.type->bitmaps[result.rotation].height + result.type->bitmaps[result.rotation].y);
     result.position.x = rnd(-result.type->bitmaps[result.rotation].x, FIELD_WIDTH - (result.type->bitmaps[result.rotation].x + result.type->bitmaps[result.rotation].width));
 
     return result;

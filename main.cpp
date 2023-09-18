@@ -15,6 +15,7 @@ int main() {
         game_data game = new_game(); // set up new game
 
         while(!quit_requested()) {
+            /* run game routines until the user stops playing or restarts the game after a game over */
             process_events();
             if(handle_input(game) == false) break; // create new game (i.e. game over)
             update_game(game);

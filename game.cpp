@@ -24,7 +24,6 @@ game_data new_game() {
     }
 
     /* set up parameters for HUD */
-
     result.hud_options.hud_font = font_named("GameFont");
 
     result.hud_options.char_width = text_width("0", result.hud_options.hud_font, HUD_TEXT_SIZE);
@@ -175,11 +174,11 @@ bool handle_input(game_data &game) {
 
 /* draw the playing field */
 void draw_field(const game_data &game) {
-    // draw field border and background
+    /* draw field border and background */
     draw_rectangle(FIELD_BORDER_COLOR, FIELD_X, FIELD_Y, FIELD_WIDTH * (PIECE_SIZE + 2 * PIECE_MARGIN) + 2 * PIECE_MARGIN, FIELD_HEIGHT * (PIECE_SIZE + 2 * PIECE_MARGIN) + 2 * PIECE_MARGIN, option_line_width(FIELD_BORDER_WIDTH));
     fill_rectangle(FIELD_BG_COLOR, FIELD_X + FIELD_BORDER_WIDTH, FIELD_Y + FIELD_BORDER_WIDTH, FIELD_WIDTH * (PIECE_SIZE + 2 * PIECE_MARGIN), FIELD_HEIGHT * (PIECE_SIZE + 2 * PIECE_MARGIN));
     
-    // draw the field (minus the falling piece)
+    /* draw the field (minus the falling piece) */
     for(int y = 0; y < FIELD_HEIGHT; y++) {
         for(int x = 0; x < FIELD_WIDTH; x++) {
             draw_cell(game.playing_field[y][x], {x, y});
@@ -202,14 +201,14 @@ string int_to_string(int num, int padding = 0, char pad_char = '0') {
 
 /* draw the HUD */
 void draw_hud(const game_data &game) {
-    // draw HUD border and background
+    /* draw HUD border and background */
     draw_rectangle(HUD_BORDER_COLOR, game.hud_options.start_x, game.hud_options.start_y, game.hud_options.content_width + 2 * (HUD_BORDER_WIDTH + HUD_PADDING), game.hud_options.content_height + 2 * (HUD_BORDER_WIDTH + HUD_PADDING));
     fill_rectangle(HUD_BG_COLOR, game.hud_options.start_x + HUD_BORDER_WIDTH, game.hud_options.start_y + HUD_BORDER_WIDTH, game.hud_options.content_width + 2 * HUD_PADDING, game.hud_options.content_height + 2 * HUD_PADDING);
 
     draw_text("SCORE: " + ((HUD_SCORE_WIDTH < HUD_LEVEL_WIDTH) ? string(HUD_LEVEL_WIDTH - HUD_SCORE_WIDTH, ' ') : "") + int_to_string(game.score, HUD_SCORE_WIDTH), HUD_TEXT_COLOR, game.hud_options.hud_font, HUD_TEXT_SIZE, HUD_CONTENT_X, HUD_CONTENT_Y); // display the current score
     draw_text("LEVEL: " + int_to_string(game.level + 1, MAX(HUD_SCORE_WIDTH, HUD_LEVEL_WIDTH), ' '), HUD_TEXT_COLOR, game.hud_options.hud_font, HUD_TEXT_SIZE, HUD_CONTENT_X, HUD_CONTENT_Y + game.hud_options.char_height); // display the current score
     
-    // draw next pieces
+    /* draw next pieces */
     int next_str_width = text_width("<< NEXT >>", game.hud_options.hud_font, HUD_TEXT_SIZE); // get width of the text so we can center it
     draw_text("<< NEXT >>", HUD_TEXT_COLOR, game.hud_options.hud_font, HUD_TEXT_SIZE, HUD_CONTENT_X + (game.hud_options.content_width - next_str_width) / 2, HUD_CONTENT_Y + 2.5 * game.hud_options.char_height);
     int next_piece_center_y = HUD_CONTENT_Y + 4 * game.hud_options.char_height + 2 * PIECE_TOTAL_SIZE;
@@ -363,7 +362,7 @@ void update_game(game_data &game) {
                 int row = frame_delta / (uint64_t)(FRAME_RATE / GAME_OVER_FILL_RATE) - 1;
                 if(row >= FIELD_HEIGHT) {
 #endif
-                    // we're overfilling
+                    /* we're overfilling */
                     game.game_over_filled = true;
                     return;
                 }

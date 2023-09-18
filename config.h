@@ -8,6 +8,7 @@
 #define WINDOW_HEIGHT                   480
 #define WINDOW_BG_COLOR                 COLOR_BLUE
 #define FRAME_RATE                      60
+#define NEXT_PIECES_CNT                 4 // number of pieces in the queue, including the falling piece
 
 #define FIELD_X                         (WINDOW_WIDTH / 4 - FIELD_WIDTH_PX / 2) // center to left half
 #define FIELD_Y                         ((WINDOW_HEIGHT - FIELD_HEIGHT_PX) / 2) // center
@@ -16,6 +17,19 @@
 #define FIELD_BG_COLOR                  COLOR_BLACK
 #define FIELD_WIDTH                     10 // TODO: set to 10
 #define FIELD_HEIGHT                    20 // TODO: set to 20
+
+#define HUD_X                           (WINDOW_WIDTH / 2) // set to -1 for auto calculation (center to right half)
+#define HUD_Y                           -1 // set to -1 for auto calculation (center to top half if possible, else center)
+#define HUD_BORDER_WIDTH                FIELD_BORDER_WIDTH
+#define HUD_BORDER_COLOR                FIELD_BORDER_COLOR
+#define HUD_BG_COLOR                    FIELD_BG_COLOR
+#define HUD_TEXT_SIZE                   24 // text height in pixels
+#define HUD_TEXT_COLOR                  COLOR_WHITE
+#define HUD_SCORE_WIDTH                 7 // number of digits for score
+#define HUD_LEVEL_WIDTH                 2 // number of digits for level
+#define HUD_PADDING                     4
+#define HUD_WIDTH                       0 // excluding border and padding, set to 0 for auto calculation
+#define HUD_HEIGHT                      0 // excluding border and padding, set to 0 for auto calculation
 
 #define PIECE_SIZE                      20
 #define PIECE_MARGIN                    1
@@ -48,5 +62,7 @@
 /* DERIVED VALUES */
 #define FIELD_WIDTH_PX                  (FIELD_WIDTH * (PIECE_SIZE + 2 * PIECE_MARGIN))
 #define FIELD_HEIGHT_PX                 (FIELD_HEIGHT * (PIECE_SIZE + 2 * PIECE_MARGIN))
+
+#define PIECE_TOTAL_SIZE                (PIECE_SIZE + 2 * PIECE_MARGIN)
 
 #endif

@@ -1,6 +1,11 @@
 #include "game.h"
 #include "piece.h"
 
+using namespace std;
+
+#define MIN(a, b)               (((a) < (b)) ? (a) : (b))
+#define MAX(a, b)               (((a) > (b)) ? (a) : (b))
+
 /* create new game struct */
 game_data new_game() {
     game_data result;
@@ -9,13 +14,51 @@ game_data new_game() {
     result.frame_num = 0; result.frame_last_update = 0;
     result.last_input_action = NO_INPUT; result.frame_last_input = 0;
 
-    result.falling_piece = new_piece();
-    for(int i = 0; i < 3; i++) result.next_pieces[i] = new_piece();
+    result.next_pieces = new_pieces(NEXT_PIECES_CNT);
     
     for(int y = 0; y < FIELD_HEIGHT; y++) {
         for(int x = 0; x < FIELD_WIDTH; x++)
             result.playing_field[y][x] = NO_COLOUR;
     }
+
+    /* set up parameters for HUD */
+
+    result.hud_options.hud_font = font_named("GameFont");
+
+    result.hud_options.char_width = text_width("0", result.hud_options.hud_font, HUD_TEXT_SIZE);
+    result.hud_options.char_height = text_height("0", result.hud_options.hud_font, HUD_TEXT_SIZE);
+    // write_line("Text size: " + to_string(result.hud_options.char_width) + "x" + to_string(result.hud_options.char_height));
+
+#if HUD_WIDTH > 0
+    result.hud_options.content_width = HUD_WIDTH;
+#else
+    result.hud_options.content_width = text_width("SCORE: " + string(HUD_SCORE_WIDTH, '0'), result.hud_options.hud_font, HUD_TEXT_SIZE);
+    result.hud_options.content_width = MAX(result.hud_options.content_width, text_width("LEVEL: " + string(HUD_LEVEL_WIDTH, '0'), result.hud_options.hud_font, HUD_TEXT_SIZE));
+    result.hud_options.content_width = MAX(result.hud_options.content_width, text_width("<< NEXT >>", result.hud_options.hud_font, HUD_TEXT_SIZE));
+#endif
+
+#if HUD_HEIGHT > 0
+    result.hud_options.content_height = HUD_HEIGHT;
+#else
+    result.hud_options.content_height = 4 * result.hud_options.char_height + (NEXT_PIECES_CNT - 1) * 4 * (PIECE_SIZE + 2 * PIECE_MARGIN);
+#endif
+
+    // write_line("HUD content size: " + to_string(result.hud_options.content_width) + "x" + to_string(result.hud_options.content_height));
+
+#if HUD_X >= 0
+    result.hud_options.start_x = HUD_X;
+#else
+    result.hud_options.start_x = (3 * WINDOW_WIDTH / 4) - (result.hud_options.content_width + 2 * (HUD_PADDING + HUD_BORDER_WIDTH)) / 2;
+#endif
+
+#if HUD_Y >= 0
+    result.hud_options.start_y = HUD_Y;
+#else
+    if(result.hud_options.content_height <= WINDOW_WIDTH / 2)
+        result.hud_options.start_y = (WINDOW_HEIGHT / 4) - (result.hud_options.content_height + 2 * (HUD_PADDING + HUD_BORDER_WIDTH)) / 2;
+    else
+        result.hud_options.start_y = (WINDOW_HEIGHT / 2) - (result.hud_options.content_height + 2 * (HUD_PADDING + HUD_BORDER_WIDTH)) / 2;
+#endif
 
     return result;
 }
@@ -45,7 +88,7 @@ uint8_t check_collision(const game_data &game, const piece &test_piece) {
 }
 
 uint8_t check_collision(const game_data &game) {
-    return check_collision(game, game.falling_piece);
+    return check_collision(game, game.next_pieces[0]);
 }
 
 /* detect horizontal collision/overlaps, used for wall kicks */
@@ -96,7 +139,7 @@ void handle_input(game_data &game) {
         game.frame_last_input = game.frame_num;
 
         if(!(check_collision(game) & COLLISION_LEFT))
-            game.falling_piece.position.x--;
+            game.next_pieces[0].position.x--;
     }
 
     if(key_down(RIGHT_KEY) && (game.last_input_action != MOVE_RIGHT || frame_delta > FRAME_RATE * SPEED_INPUT_MOVE)) { // move piece to the right
@@ -104,7 +147,7 @@ void handle_input(game_data &game) {
         game.frame_last_input = game.frame_num;
 
         if(!(check_collision(game) & COLLISION_RIGHT))
-            game.falling_piece.position.x++;
+            game.next_pieces[0].position.x++;
     }
 
     if(key_down(DOWN_KEY) && (game.last_input_action != FORCE_DOWN || frame_delta > FRAME_RATE * SPEED_INPUT_FORCE_DOWN)) { // move piece down
@@ -112,7 +155,7 @@ void handle_input(game_data &game) {
         game.frame_last_input = game.frame_num;
 
         if(!(check_collision(game) & COLLISION_BOTTOM)) {
-            game.falling_piece.position.y++;
+            game.next_pieces[0].position.y++;
             game.score += SCORE_FORCE_DOWN;
         }
     }
@@ -121,7 +164,7 @@ void handle_input(game_data &game) {
         game.last_input_action = ROTATE;
         game.frame_last_input = game.frame_num;
 
-        piece new_piece = game.falling_piece; // rotated piece
+        piece new_piece = game.next_pieces[0]; // rotated piece
         new_piece.rotation = (new_piece.rotation + 1) % 4;
 
         /* check for overlaps/wall kicks */
@@ -140,7 +183,7 @@ void handle_input(game_data &game) {
                 ok = (check_horiz_collision_overlap(game, new_piece) == 0);
             }
 
-            if(ok) game.falling_piece = new_piece; // any problems have been corrected, and we can now place our piece
+            if(ok) game.next_pieces[0] = new_piece; // any problems have been corrected, and we can now place our piece
         }
     }
 }
@@ -158,12 +201,43 @@ void draw_field(const game_data &game) {
         }
     }
 
-    draw_piece(game.falling_piece); // draw the falling piece
+    draw_piece(game.next_pieces[0]); // draw the falling piece
+}
+
+/* convert an integer to a string, optionally with zero padding */
+string int_to_string(int num, int padding = 0, char pad_char = '0') {
+    string result = to_string(num);
+    if(padding > 0) result = string(padding - result.length(), pad_char) + result;
+    return result;
+}
+
+/* HUD content start coordinates - only usable if game_data struct is named game */
+#define HUD_CONTENT_X                   (game.hud_options.start_x + HUD_BORDER_WIDTH + HUD_PADDING)
+#define HUD_CONTENT_Y                   (game.hud_options.start_y + HUD_BORDER_WIDTH + HUD_PADDING)
+
+/* draw the HUD */
+void draw_hud(const game_data &game) {
+    // draw HUD border and background
+    draw_rectangle(HUD_BORDER_COLOR, game.hud_options.start_x, game.hud_options.start_y, game.hud_options.content_width + 2 * (HUD_BORDER_WIDTH + HUD_PADDING), game.hud_options.content_height + 2 * (HUD_BORDER_WIDTH + HUD_PADDING));
+    fill_rectangle(HUD_BG_COLOR, game.hud_options.start_x + HUD_BORDER_WIDTH, game.hud_options.start_y + HUD_BORDER_WIDTH, game.hud_options.content_width + 2 * HUD_PADDING, game.hud_options.content_height + 2 * HUD_PADDING);
+
+    draw_text("SCORE: " + ((HUD_SCORE_WIDTH < HUD_LEVEL_WIDTH) ? string(HUD_LEVEL_WIDTH - HUD_SCORE_WIDTH, ' ') : "") + int_to_string(game.score, HUD_SCORE_WIDTH), HUD_TEXT_COLOR, game.hud_options.hud_font, HUD_TEXT_SIZE, HUD_CONTENT_X, HUD_CONTENT_Y); // display the current score
+    draw_text("LEVEL: " + int_to_string(game.level + 1, MAX(HUD_SCORE_WIDTH, HUD_LEVEL_WIDTH), ' '), HUD_TEXT_COLOR, game.hud_options.hud_font, HUD_TEXT_SIZE, HUD_CONTENT_X, HUD_CONTENT_Y + game.hud_options.char_height); // display the current score
+    
+    // draw next pieces
+    int next_str_width = text_width("<< NEXT >>", game.hud_options.hud_font, HUD_TEXT_SIZE); // get width of the text so we can center it
+    draw_text("<< NEXT >>", HUD_TEXT_COLOR, game.hud_options.hud_font, HUD_TEXT_SIZE, HUD_CONTENT_X + (game.hud_options.content_width - next_str_width) / 2, HUD_CONTENT_Y + 2.5 * game.hud_options.char_height);
+    int next_piece_center_y = HUD_CONTENT_Y + 4 * game.hud_options.char_height + 2 * PIECE_TOTAL_SIZE;
+    for(int i = 1; i < NEXT_PIECES_CNT; i++, next_piece_center_y += 4 * PIECE_TOTAL_SIZE) {
+        // write_line(to_string(i) + ": " + to_string(piece_width(game.next_pieces[i])) + "x" + to_string(piece_height(game.next_pieces[i])));
+        draw_piece(game.next_pieces[i], {(HUD_CONTENT_X + (game.hud_options.content_width - PIECE_TOTAL_SIZE * piece_width(game.next_pieces[i])) / 2), (next_piece_center_y - (PIECE_TOTAL_SIZE * piece_height(game.next_pieces[i])) / 2)}, true, true);
+    }
 }
 
 /* draw entire game */
 void draw_game(const game_data &game) {
     draw_field(game);
+    draw_hud(game);
 
     refresh_screen(FRAME_RATE);
 }
@@ -172,8 +246,8 @@ void draw_game(const game_data &game) {
 void merge_piece(game_data &game) {
     for(int y = 0; y < 4; y++) {
         for(int x = 0; x < 4; x++) {
-            if(PIECE_ROW(game.falling_piece.type.bitmaps[game.falling_piece.rotation], y) & (1 << x))
-                game.playing_field[game.falling_piece.position.y + y][game.falling_piece.position.x + x] = game.falling_piece.type.p_color;
+            if(PIECE_ROW(game.next_pieces[0].type.bitmaps[game.next_pieces[0].rotation], y) & (1 << x))
+                game.playing_field[game.next_pieces[0].position.y + y][game.next_pieces[0].position.x + x] = game.next_pieces[0].type.p_color;
         }
     }
 }
@@ -256,9 +330,8 @@ void award_score(game_data &game, const removed_rows &rows) {
 
 /* generate new next piece */
 void next_piece(game_data &game) {
-    game.falling_piece = game.next_pieces[0]; // pop next piece out
-    for(int i = 1; i < 3; i++) game.next_pieces[i - 1] = game.next_pieces[i]; // push pieces
-    game.next_pieces[2] = new_piece(); // add new piece to queue
+    new_pieces(game.next_pieces, 1); // ensure that the new piece is not the same as the just-fallen piece
+    game.next_pieces.pop_front();
 }
 
 /* update game state */
@@ -274,7 +347,7 @@ void update_game(game_data &game) {
             removed_rows rows = remove_full_rows(game); // find and remove full rows
             award_score(game, rows); // then award score to player
         } else {
-            game.falling_piece.position.y++; // descend falling piece
+            game.next_pieces[0].position.y++; // descend falling piece
         }
 
         game.frame_last_update = game.frame_num;

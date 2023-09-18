@@ -2,6 +2,9 @@
 #define PIECE_H
 
 #include "splashkit.h"
+#include <deque>
+
+using namespace std;
 
 #define PIECE_ROW(bitmap, row)  ((bitmap >> ((row) * 4)) & 0x0F) // macro to extract the bitmap of a single row
 #define PIECE_COL(bitmap, col)  ( ((PIECE_ROW(bitmap, 0) & ((1 << (col)))) ? (1 << 0) : 0) \
@@ -38,8 +41,12 @@ struct piece {
 extern const piece_type piece_types[7]; // NOTE: extern is used so that g++ wouldn't complain
 
 piece new_piece();
+void new_pieces(deque<piece> &pieces, int n);
+deque<piece> new_pieces(int n);
 void draw_cell(piece_colour color, const piece_position &position, bool absolute = false);
 void draw_piece(const piece &p);
-void draw_piece(const piece &p, const piece_position &position, bool absolute = true);
+void draw_piece(const piece &p, const piece_position &position, bool absolute = true, bool tight = false);
+int piece_width(const piece &p);
+int piece_height(const piece &p);
 
 #endif

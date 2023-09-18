@@ -1,8 +1,13 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "splashkit.h"
+
 #include "piece.h"
 #include "config.h"
+#include <deque>
+
+using namespace std;
 
 enum game_input_action {
     NO_INPUT,
@@ -12,18 +17,33 @@ enum game_input_action {
     FORCE_DOWN
 };
 
+struct hud_drawing_options {
+    int start_x;
+    int start_y;
+
+    int content_width;
+    int content_height;
+
+    int char_width;
+    int char_height;
+    
+    font hud_font;
+};
+
 struct game_data {
     int score;
     int level;
     piece_colour playing_field[FIELD_HEIGHT][FIELD_WIDTH];
-    piece falling_piece;
-    piece next_pieces[3];
+    deque<piece> next_pieces;
     uint64_t frame_num;
     uint64_t frame_last_update;
 
     /* input */
     game_input_action last_input_action;
     uint64_t frame_last_input;
+
+    /* HUD */
+    hud_drawing_options hud_options;
 
 };
 

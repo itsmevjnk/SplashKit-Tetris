@@ -51,6 +51,34 @@ piece new_piece() {
     return result;
 }
 
+/* generate one or more pieces and append them to the pieces double-ended queue (deque), ensuring that each piece's type are unique */
+void new_pieces(deque<piece> &pieces, int n) {
+    do {
+        piece result = new_piece(); // generate a piece
+
+        /* check for duplication */
+        bool duplicate = false;
+        for(int i = 0; i < pieces.size(); i++) {
+            if(pieces[i].type.p_color == result.type.p_color) {
+                duplicate = true;
+                break;
+            }
+        }
+
+        if(!duplicate) {
+            /* append to vector if it's not unique */
+            pieces.push_back(result);
+            n--;
+        }
+    } while(n > 0);
+}
+
+deque<piece> new_pieces(int n) {
+    deque<piece> result;
+    new_pieces(result, n);
+    return result;
+}
+
 /* draw a cell, given its colour and position, and (optionally) whether the position is absolute */
 void draw_cell(piece_colour p_color, const piece_position &position, bool absolute) {
     /* resolve piece colour */
@@ -87,8 +115,8 @@ void draw_cell(piece_colour p_color, const piece_position &position, bool absolu
         y = position.y;
     } else {
         if(position.x < 0 || position.y < 0) return; // do not draw out of bound
-        x = FIELD_DRAW_X + FIELD_BORDER_WIDTH + position.x * (PIECE_SIZE + 2 * PIECE_MARGIN);
-        y = FIELD_DRAW_Y + FIELD_BORDER_WIDTH + position.y * (PIECE_SIZE + 2 * PIECE_MARGIN);
+        x = FIELD_DRAW_X + FIELD_BORDER_WIDTH + position.x * PIECE_TOTAL_SIZE;
+        y = FIELD_DRAW_Y + FIELD_BORDER_WIDTH + position.y * PIECE_TOTAL_SIZE;
     }
 
     // write_line("Colour: " + color_to_string(draw_color) + ", x = " + to_string(x) + ", y = " + to_string(y));
@@ -109,17 +137,67 @@ void draw_piece(const piece &p) {
     }
 }
 
-/* draw a piece, with overriden XY coordinates (absolute by default) */
-void draw_piece(const piece &p, const piece_position &position, bool absolute) {
-    for(int y = 0; y < 4 && (absolute || (p.position.y + y < FIELD_HEIGHT)); y++) {
-        for(int x = 0; x < 4 && (absolute || (p.position.x + x < FIELD_WIDTH)); x++) {
-            if(p.type.bitmaps[p.rotation] & (1 << (y * 4 + x))) {
-                if(absolute)
-                    draw_cell(p.type.p_color, {(position.x + x * (PIECE_SIZE + 2 * PIECE_MARGIN)), (position.y + y * (PIECE_SIZE + 2 * PIECE_MARGIN))}, true);
-                else
-                    draw_cell(p.type.p_color, {(position.x + x), (position.y + y)});
+/* draw a piece, with overriden XY coordinates (absolute by default), and optionally use the XY coordinates as the start of the actual cell (tight drawing) */
+void draw_piece(const piece &p, const piece_position &position, bool absolute, bool tight) {
+    int cell_y = position.y;
+    int dy = (absolute) ? PIECE_TOTAL_SIZE : 1; // cell_y increment step
+
+    for(int y = 0; y < 4 && (absolute || tight || (cell_y < FIELD_HEIGHT)); y++) {
+        int cell_x = position.x;
+
+        bool empty_row = (PIECE_ROW(p.type.bitmaps[p.rotation], y) == 0);
+
+        if(!tight || !empty_row) {
+            /* only draw this row if either tight drawing is not enabled or the row is not empty */
+            for(int x = 0; x < 4 && (absolute || tight || (cell_x < FIELD_WIDTH)); x++) {
+                bool empty_col = (PIECE_COL(p.type.bitmaps[p.rotation], x) == 0); // only needed for tight drawing
+
+                if(p.type.bitmaps[p.rotation] & (1 << (y * 4 + x))) {
+                    draw_cell(p.type.p_color, {cell_x, cell_y}, absolute);
+                }
+
+                if(!empty_col) cell_x += (absolute) ? PIECE_TOTAL_SIZE : 1;
             }
+
+            cell_y += dy;
         }
     }
 }
 
+/* get a piece's width */
+int piece_width(const piece &p) {
+    bool in_piece = false; // set when we have entered a piece
+    int result = 0;
+
+    for(int x = 0; x < 4; x++) {
+        if(PIECE_COL(p.type.bitmaps[p.rotation], x) != 0) {
+            /* there is a cell in here */
+            if(!in_piece) in_piece = true;
+            result++;
+        } else {
+            /* there are no cells - if in_piece is true, it means we are no longer in the piece */
+            if(in_piece) break; // just exit here
+        }
+    }
+
+    return result;
+}
+
+/* get a piece's height */
+int piece_height(const piece &p) {
+    bool in_piece = false; // set when we have entered a piece
+    int result = 0;
+
+    for(int y = 0; y < 4; y++) {
+        if(PIECE_ROW(p.type.bitmaps[p.rotation], y) != 0) {
+            /* there is a cell in here */
+            if(!in_piece) in_piece = true;
+            result++;
+        } else {
+            /* there are no cells - if in_piece is true, it means we are no longer in the piece */
+            if(in_piece) break; // just exit here
+        }
+    }
+
+    return result;
+}

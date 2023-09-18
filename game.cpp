@@ -73,7 +73,7 @@ uint8_t check_collision(const game_data &game, const piece &test_piece) {
     
     for(int y = 0; y < 4; y++) {
         for(int x = 0; x < 4; x++) {
-            if(test_piece.type.bitmaps[test_piece.rotation].bitmap & (1 << (y * 4 + x))) {
+            if(test_piece.type->bitmaps[test_piece.rotation].bitmap & (1 << (y * 4 + x))) {
                 /* there is a cell - go check it out */
                 int field_x = test_piece.position.x + x, field_y = test_piece.position.y + y;
                 // if(field_y < 0 || field_x < 0) continue; // still out of bounds - nothing to check
@@ -96,7 +96,7 @@ uint8_t check_horiz_collision_overlap(const game_data &game, const piece &test_p
     uint8_t result = 0;
 
     /* test left edge */
-    int field_x = test_piece.position.x + test_piece.type.bitmaps[test_piece.rotation].x;
+    int field_x = test_piece.position.x + test_piece.type->bitmaps[test_piece.rotation].x;
     if(field_x < 0) result |= COLLISION_LEFT; // left edge is out of bounds
     else for(int y = MAX(-test_piece.position.y, 0); y < 4 && test_piece.position.y + y < FIELD_HEIGHT; y++) {
         int field_y = test_piece.position.y + y;
@@ -107,7 +107,7 @@ uint8_t check_horiz_collision_overlap(const game_data &game, const piece &test_p
     }
 
     /* test right edge */
-    field_x += test_piece.type.bitmaps[test_piece.rotation].width - 1;
+    field_x += test_piece.type->bitmaps[test_piece.rotation].width - 1;
     if(field_x >= FIELD_WIDTH) result |= COLLISION_RIGHT; // right edge is out of bounds
     else for(int y = MAX(-test_piece.position.y, 0); y < 4 && test_piece.position.y + y < FIELD_HEIGHT; y++) {
         int field_y = test_piece.position.y + y;
@@ -236,7 +236,7 @@ void draw_hud(const game_data &game) {
     int next_piece_center_y = HUD_CONTENT_Y + 4 * game.hud_options.char_height + 2 * PIECE_TOTAL_SIZE;
     for(int i = 1; i < NEXT_PIECES_CNT; i++, next_piece_center_y += 4 * PIECE_TOTAL_SIZE) {
         // write_line(to_string(i) + ": " + to_string(piece_width(game.next_pieces[i])) + "x" + to_string(piece_height(game.next_pieces[i])));
-        draw_piece(game.next_pieces[i], {(HUD_CONTENT_X + (game.hud_options.content_width - PIECE_TOTAL_SIZE * game.next_pieces[i].type.bitmaps[game.next_pieces[i].rotation].width) / 2), (next_piece_center_y - (PIECE_TOTAL_SIZE * game.next_pieces[i].type.bitmaps[game.next_pieces[i].rotation].height) / 2)}, true, true);
+        draw_piece(game.next_pieces[i], {(HUD_CONTENT_X + (game.hud_options.content_width - PIECE_TOTAL_SIZE * game.next_pieces[i].type->bitmaps[game.next_pieces[i].rotation].width) / 2), (next_piece_center_y - (PIECE_TOTAL_SIZE * game.next_pieces[i].type->bitmaps[game.next_pieces[i].rotation].height) / 2)}, true, true);
     }
 }
 
@@ -252,8 +252,8 @@ void draw_game(const game_data &game) {
 void merge_piece(game_data &game) {
     for(int y = 0; y < 4; y++) {
         for(int x = 0; x < 4; x++) {
-            if(PIECE_ROW(game.next_pieces[0].type.bitmaps[game.next_pieces[0].rotation].bitmap, y) & (1 << x))
-                game.playing_field[game.next_pieces[0].position.y + y][game.next_pieces[0].position.x + x] = game.next_pieces[0].type.p_color;
+            if(PIECE_ROW(game.next_pieces[0].type->bitmaps[game.next_pieces[0].rotation].bitmap, y) & (1 << x))
+                game.playing_field[game.next_pieces[0].position.y + y][game.next_pieces[0].position.x + x] = game.next_pieces[0].type->p_color;
         }
     }
 }

@@ -39,7 +39,7 @@ struct piece_position {
 };
 
 struct piece {
-    piece_type type;
+    const piece_type *type;
     int rotation;
     piece_position position;
 };

@@ -10,11 +10,11 @@ using namespace std;
 piece new_piece() {
     piece result;
     
-    result.type = piece_types[rnd(6)]; // see piece_types.cpp
+    result.type = &piece_types[rnd(6)]; // see piece_types.cpp
     result.rotation = rnd(3); // there are 4 possible rotated variants for each piece, also see piece_types.cpp
     
-    result.position.y = -result.type.bitmaps[result.rotation].height;
-    result.position.x = rnd(-result.type.bitmaps[result.rotation].x, FIELD_WIDTH - (result.type.bitmaps[result.rotation].x + result.type.bitmaps[result.rotation].width));
+    result.position.y = -result.type->bitmaps[result.rotation].height;
+    result.position.x = rnd(-result.type->bitmaps[result.rotation].x, FIELD_WIDTH - (result.type->bitmaps[result.rotation].x + result.type->bitmaps[result.rotation].width));
 
     return result;
 }
@@ -27,7 +27,7 @@ void new_pieces(deque<piece> &pieces, int n) {
         /* check for duplication */
         bool duplicate = false;
         for(int i = 0; i < pieces.size(); i++) {
-            if(pieces[i].type.p_color == result.type.p_color) {
+            if(pieces[i].type->p_color == result.type->p_color) {
                 duplicate = true;
                 break;
             }
@@ -98,8 +98,8 @@ void draw_cell(piece_colour p_color, const piece_position &position, bool absolu
 void draw_piece(const piece &p) {
     for(int y = 0; y < 4 && p.position.y + y < FIELD_HEIGHT; y++) {
         for(int x = 0; x < 4 && p.position.x + x < FIELD_WIDTH; x++) {
-            if(p.type.bitmaps[p.rotation].bitmap & (1 << (y * 4 + x)))
-                draw_cell(p.type.p_color, {(p.position.x + x), (p.position.y + y)});
+            if(p.type->bitmaps[p.rotation].bitmap & (1 << (y * 4 + x)))
+                draw_cell(p.type->p_color, {(p.position.x + x), (p.position.y + y)});
         }
     }
 }
@@ -110,14 +110,14 @@ void draw_piece(const piece &p, const piece_position &position, bool absolute, b
 
     int d = (absolute) ? PIECE_TOTAL_SIZE : 1; // cell_x/y increment step
 
-    int y0 = (tight) ? p.type.bitmaps[p.rotation].y : 0;
-    for(int y = y0; y - y0 < ((tight) ? p.type.bitmaps[p.rotation].height : 4) && (absolute || (cell_y < FIELD_HEIGHT)); y++, cell_y += d) {
+    int y0 = (tight) ? p.type->bitmaps[p.rotation].y : 0;
+    for(int y = y0; y - y0 < ((tight) ? p.type->bitmaps[p.rotation].height : 4) && (absolute || (cell_y < FIELD_HEIGHT)); y++, cell_y += d) {
         int cell_x = position.x;
 
-        int x0 = (tight) ? p.type.bitmaps[p.rotation].x : 0;
-        for(int x = x0; x - x0 < ((tight) ? p.type.bitmaps[p.rotation].width : 4) && (absolute || (cell_x < FIELD_WIDTH)); x++, cell_x += d) {
-            if(p.type.bitmaps[p.rotation].bitmap & (1 << (y * 4 + x))) {
-                draw_cell(p.type.p_color, {cell_x, cell_y}, absolute);
+        int x0 = (tight) ? p.type->bitmaps[p.rotation].x : 0;
+        for(int x = x0; x - x0 < ((tight) ? p.type->bitmaps[p.rotation].width : 4) && (absolute || (cell_x < FIELD_WIDTH)); x++, cell_x += d) {
+            if(p.type->bitmaps[p.rotation].bitmap & (1 << (y * 4 + x))) {
+                draw_cell(p.type->p_color, {cell_x, cell_y}, absolute);
             }
         }
     }
@@ -126,7 +126,7 @@ void draw_piece(const piece &p, const piece_position &position, bool absolute, b
 /* FOR DEBUGGING - get a descriptive string of a piece */
 string piece_to_string(const piece &p) {
     string type = "Unknown";
-    switch(p.type.p_color) {
+    switch(p.type->p_color) {
         case CYAN: type = "I"; break;
         case BLUE: type = "J"; break;
         case ORANGE: type = "L"; break;

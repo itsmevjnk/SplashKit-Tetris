@@ -257,31 +257,37 @@
  * @brief Points added when two contiguous rows have been cleared.
  * 
  */
-#define SCORE_CLEAR_2_CONT              200
+#define SCORE_CLEAR_2_CONT              250
 
 /**
  * @brief Points added when two non-contiguous rows have been cleared.
  * 
  */
-#define SCORE_CLEAR_2_SPLIT             250
+#define SCORE_CLEAR_2_SPLIT             300
 
 /**
  * @brief Points added when three contiguous rows have been cleared.
  * 
  */
-#define SCORE_CLEAR_3_CONT              300
+#define SCORE_CLEAR_3_CONT              400
 
 /**
  * @brief Points added when three non-contiguous rows have been cleared.
  * 
  */
-#define SCORE_CLEAR_3_SPLIT             350
+#define SCORE_CLEAR_3_SPLIT             450
 
 /**
  * @brief Points added when four rows have been cleared.
  * 
  */
-#define SCORE_CLEAR_4                   500
+#define SCORE_CLEAR_4                   750
+
+/**
+ * @brief Number of points needed for each level-up.
+ * 
+ */
+#define SCORE_LEVEL_UP                  1000
 
 /* SPEED */
 

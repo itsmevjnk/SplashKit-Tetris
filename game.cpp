@@ -344,7 +344,7 @@ void award_score(game_data &game, const removed_rows &rows) {
         case 4:
             /* tetris */
             game.score += SCORE_CLEAR_4;
-            game.level++;
+            // game.level++;
             break;
         case 2:
             /* double */
@@ -372,6 +372,8 @@ void award_score(game_data &game, const removed_rows &rows) {
             /* does this case even happen? */
             break;
     }
+
+    game.level = game.score / SCORE_LEVEL_UP; // easiest way to do it really
 }
 
 /* generate new next piece */

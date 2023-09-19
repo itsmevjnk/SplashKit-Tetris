@@ -10,7 +10,7 @@
 using namespace std;
 
 /**
- * @brief 
+ * @brief Enumeration of game input actions.
  * 
  */
 enum game_input_action {
@@ -25,6 +25,12 @@ enum game_input_action {
  * @brief HUD drawing options; this is used primarily in draw_hud().
  * 
  * @field start_x The X coordinate of the HUD content's top left corner (within the padding and border).
+ * @field start_y The Y coordinate of the HUD content's top left corner (within the padding and border).
+ * @field content_width The width of the HUD content box.
+ * @field content_height The height of the HUD content box.
+ * @field char_width The HUD character width.
+ * @field char_height The HUD character height.
+ * @field hud_font THe HUD font structure, for use with SplashKit.
  * 
  */
 struct hud_drawing_options {
@@ -40,6 +46,23 @@ struct hud_drawing_options {
     font hud_font;
 };
 
+/**
+ * @brief The game data structure.
+ * 
+ * @field score The player's score.
+ * @field level The player's level (zero-based).
+ * @field playing_field The playing field.
+ * @field next_pieces The falling and next pieces queue.
+ * @field frame_num The current frame number.
+ * @field frame_last_update The frame number of the last game update (in normal operations mode).
+ * @field last_input_action The last input action from the player.
+ * @field frame_last_input The frame number where the last input action was made and accepted.
+ * @field hud_options HUD drawing options.
+ * @field game_over Game over flag.
+ * @field game_over_filled Set after the playing field has been filled for the game over screen.
+ * @field frame_game_over The frame number where the game over condition was detected.
+ * 
+ */
 struct game_data {
     int score;
     int level;
@@ -62,6 +85,13 @@ struct game_data {
     uint64_t frame_game_over;
 };
 
+/**
+ * @brief Removed rows information.
+ * 
+ * @field flags Array of flags indicating which rows have been removed.
+ * @field count The number of removed rows.
+ * 
+ */
 struct removed_rows {
     bool flags[FIELD_HEIGHT];
     int count;

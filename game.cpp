@@ -3,7 +3,16 @@
 
 using namespace std;
 
+/**
+ * @brief Macro function to find the minimum of two values.
+ * 
+ */
 #define MIN(a, b)               (((a) < (b)) ? (a) : (b))
+
+/**
+ * @brief Macro function to find the maximum of two values.
+ * 
+ */
 #define MAX(a, b)               (((a) > (b)) ? (a) : (b))
 
 /* create new game struct */
@@ -100,7 +109,7 @@ bool handle_input(game_data &game) {
     } else {
         uint64_t frame_delta = game.frame_num - game.frame_last_input;
 
-        if(key_down(LEFT_KEY) && (game.last_input_action != MOVE_LEFT || frame_delta > FRAME_RATE * SPEED_INPUT_MOVE)) { // move piece to the left
+        if(key_down(LEFT_KEY) && (game.last_input_action != MOVE_LEFT || frame_delta > FRAME_RATE / SPEED_INPUT_MOVE)) { // move piece to the left
             game.last_input_action = MOVE_LEFT;
             game.frame_last_input = game.frame_num;
 
@@ -113,7 +122,7 @@ bool handle_input(game_data &game) {
             }
         }
 
-        if(key_down(RIGHT_KEY) && (game.last_input_action != MOVE_RIGHT || frame_delta > FRAME_RATE * SPEED_INPUT_MOVE)) { // move piece to the right
+        if(key_down(RIGHT_KEY) && (game.last_input_action != MOVE_RIGHT || frame_delta > FRAME_RATE / SPEED_INPUT_MOVE)) { // move piece to the right
             game.last_input_action = MOVE_RIGHT;
             game.frame_last_input = game.frame_num;
 
@@ -126,7 +135,7 @@ bool handle_input(game_data &game) {
             }
         }
 
-        if(key_down(DOWN_KEY) && (game.last_input_action != FORCE_DOWN || frame_delta > FRAME_RATE * SPEED_INPUT_FORCE_DOWN)) { // move piece down
+        if(key_down(DOWN_KEY) && (game.last_input_action != FORCE_DOWN || frame_delta > FRAME_RATE / SPEED_INPUT_FORCE_DOWN)) { // move piece down
             game.last_input_action = FORCE_DOWN;
             game.frame_last_input = game.frame_num;
 
@@ -139,7 +148,7 @@ bool handle_input(game_data &game) {
             } else game.score += SCORE_FORCE_DOWN;
         }
 
-        if(key_down(UP_KEY) && (game.last_input_action != ROTATE || frame_delta > FRAME_RATE * SPEED_INPUT_ROTATE)) { // rotate piece
+        if(key_down(UP_KEY) && (game.last_input_action != ROTATE || frame_delta > FRAME_RATE / SPEED_INPUT_ROTATE)) { // rotate piece
             game.last_input_action = ROTATE;
             game.frame_last_input = game.frame_num;
 
@@ -183,15 +192,30 @@ void draw_field(const game_data &game) {
     draw_piece(game.next_pieces[0]); // draw the falling piece
 }
 
-/* convert an integer to a string, optionally with zero padding */
+/**
+ * @brief Convert an integer to a string, optionally with padding.
+ * 
+ * @param num The number to be converted.
+ * @param padding The number of characters to pad the number to (optional, defaults to 0 for no padding).
+ * @param pad_char The padding character (optional, defaults to zero padding).
+ * @return string The decimal string representation of num.
+ */
 static string int_to_string(int num, int padding = 0, char pad_char = '0') {
     string result = to_string(num);
     if(padding > 0) result = string(padding - result.length(), pad_char) + result;
     return result;
 }
 
-/* HUD content start coordinates - only usable if game_data struct is named game */
+/**
+ * @brief Macro for the HUD content area's starting X coordinate.
+ * 
+ */
 #define HUD_CONTENT_X                   (game.hud_options.start_x + HUD_BORDER_WIDTH + HUD_PADDING)
+
+/**
+ * @brief Macro for the HUD content area's starting Y coordinate.
+ * 
+ */
 #define HUD_CONTENT_Y                   (game.hud_options.start_y + HUD_BORDER_WIDTH + HUD_PADDING)
 
 /* draw the HUD */

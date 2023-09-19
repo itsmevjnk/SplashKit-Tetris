@@ -3,7 +3,16 @@
 
 using namespace std;
 
+/**
+ * @brief The playing field content area's top left corner X coordinate.
+ * 
+ */
 #define FIELD_DRAW_X            (FIELD_X + FIELD_BORDER_WIDTH)
+
+/**
+ * @brief The playing field content area's top left corner Y coordinate.
+ * 
+ */
 #define FIELD_DRAW_Y            (FIELD_Y + FIELD_BORDER_WIDTH)
 
 /* generate a new random piece */

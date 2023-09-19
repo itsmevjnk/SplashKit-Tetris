@@ -1,10 +1,19 @@
 #include "game.h"
 #include "config.h"
 
+/**
+ * @brief Load resource bundle.
+ * 
+ */
 void load_resources() {
     load_resource_bundle("resources", "resources.txt");
 }
 
+/**
+ * @brief The main function.
+ * 
+ * @return int The program's return value.
+ */
 int main() {
     load_resources(); // load resource bundle
     

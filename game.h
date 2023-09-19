@@ -146,6 +146,49 @@ uint8_t check_collision(const game_data &game, const piece &test_piece);
 uint8_t check_collision(const game_data &game);
 
 /**
+ * @brief Handle inputs during game over.
+ * 
+ * @return true Returned if the player has not chosen to start a new game.
+ * @return false Returned if the player has chosen to start a new game.
+ */
+bool handle_game_over();
+
+/**
+ * @brief Handle left move action.
+ * 
+ * @param game The game data structure.
+ */
+void handle_left_move(game_data &game);
+
+/**
+ * @brief Handle right move action.
+ * 
+ * @param game The game data structure.
+ */
+void handle_right_move(game_data &game);
+
+/**
+ * @brief Handle down move action.
+ * 
+ * @param game The game data structure.
+ */
+void handle_down_move(game_data &game);
+
+/**
+ * @brief Handle piece rotation.
+ * 
+ * @param game The game data structure.
+ */
+void handle_rotate(game_data &game);
+
+/**
+ * @brief Handle piece swapping action.
+ * 
+ * @param game The game data structure.
+ */
+void handle_swap(game_data &game);
+
+/**
  * @brief Handle user inputs.
  * 
  * @param game The game data structure.

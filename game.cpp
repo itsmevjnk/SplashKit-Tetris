@@ -102,94 +102,118 @@ uint8_t check_collision(const game_data &game) {
     return check_collision(game, game.next_pieces[0]);
 }
 
+/* handle game over input */
+bool handle_game_over() {
+    return !key_down(RETURN_KEY); // only check if the RETURN key is pressed; if it is, then we start a new game
+}
+
+/* handle left move */
+void handle_left_move(game_data &game) {
+    game.next_pieces[0].position.x--; // try shifting it to the left for testing
+    if(check_collision(game) & COLLISION_LEFT) {
+        game.next_pieces[0].position.x++;
+#ifdef DEBUG_INPUT_REJECTIONS
+        write_line("Left move rejected for " + piece_to_string(game.next_pieces[0]));
+#endif
+    } else game.frame_last_move = game.frame_num;
+}
+
+/* handle right move */
+void handle_right_move(game_data &game) {
+    game.next_pieces[0].position.x++;
+    if(check_collision(game) & COLLISION_RIGHT) {
+        game.next_pieces[0].position.x--;
+#ifdef DEBUG_INPUT_REJECTIONS
+        write_line("Right move rejected for " + piece_to_string(game.next_pieces[0]));
+#endif
+    } else game.frame_last_move = game.frame_num;
+}
+
+/* handle down move/force */
+void handle_down_move(game_data &game) {
+    game.next_pieces[0].position.y++;
+    if(check_collision(game) & COLLISION_BOTTOM) {
+        game.next_pieces[0].position.y--;
+#ifdef DEBUG_INPUT_REJECTIONS
+        write_line("Down move rejected for " + piece_to_string(game.next_pieces[0]));
+#endif
+    } else {
+        game.score += SCORE_FORCE_DOWN;
+        game.frame_last_down = game.frame_num;
+    }
+}
+
+/* handle piece rotation */
+void handle_rotate(game_data &game) {
+    piece new_piece = game.next_pieces[0]; // rotated piece
+    new_piece.rotation = (new_piece.rotation + 1) % 4;
+
+    bool ok = false; // set if the piece fits
+
+    if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) ok = true; // ignore ceiling collision
+    else {
+        /* attempt wall kicking */
+        new_piece.position.x++; // right kick
+        if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) ok = true;
+        else {
+            new_piece.position.x -= 2; // left kick
+            if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) ok = true;
+        }
+    }
+
+    if(ok) {
+        game.next_pieces[0] = new_piece;
+        game.frame_last_rotate = game.frame_num;
+    }
+#ifdef DEBUG_INPUT_REJECTIONS
+    else write_line("Rotation rejected for " + piece_to_string(game.next_pieces[0]));
+#endif
+}
+
+/* handle piece swap */
+void handle_swap(game_data &game) {
+    piece new_piece = game.next_pieces[1]; // the piece that we'll be swapping with
+
+    piece_position current_centre = piece_centre_point(game.next_pieces[0]); // the current falling piece's centre point coordinates
+    piece_position new_centre = piece_centre_point(new_piece, true); // the new falling piece's centre point offset
+
+    /* translate the new piece such that its centre point matches that of the old piece */
+    new_piece.position.x = current_centre.x - new_centre.x;
+    new_piece.position.y = current_centre.y - new_centre.y;
+
+    /* check if the new piece fits */
+    if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) {
+        /* yes, it fits */
+        position_piece(game.next_pieces[0]); // reposition back to the top of the field
+        game.next_pieces.push_back(game.next_pieces[0]); // push the old piece to the back
+        game.next_pieces.pop_front(); // pop the old piece off
+        game.next_pieces[0] = new_piece; // replace the new piece with the one with the calculated values
+
+        game.frame_last_swap = game.frame_num;
+    }
+#ifdef DEBUG_INPUT_REJECTIONS
+    else write_line("Swap rejected for " + piece_to_string(game.next_pieces[0]) + " (attempted to swap for " + piece_to_string(new_piece) + ")");
+#endif   
+}
+
 /* handle game inputs */
 bool handle_input(game_data &game) {
-    if(game.game_over) {
-        return !key_down(RETURN_KEY); // only check if the RETURN key is pressed; if it is, then we start a new game
-    } else {
-        if(key_down(LEFT_KEY) && (game.frame_last_move == 0 || game.frame_num - game.frame_last_move >= FRAME_RATE / SPEED_INPUT_MOVE)) { // move piece to the left
-            game.next_pieces[0].position.x--; // try shifting it to the left for testing
-            if(check_collision(game) & COLLISION_LEFT) {
-                game.next_pieces[0].position.x++;
-#ifdef DEBUG_INPUT_REJECTIONS
-                write_line("Left move rejected for " + piece_to_string(game.next_pieces[0]));
-#endif
-            } else game.frame_last_move = game.frame_num;
-        }
+    if(game.game_over) return handle_game_over();
+    else {
+        if(key_down(LEFT_KEY) && (game.frame_last_move == 0 || game.frame_num - game.frame_last_move >= FRAME_RATE / SPEED_INPUT_MOVE))
+            handle_left_move(game);
 
-        if(key_down(RIGHT_KEY) && (game.frame_last_move == 0 || game.frame_num - game.frame_last_move >= FRAME_RATE / SPEED_INPUT_MOVE)) { // move piece to the right
-            game.next_pieces[0].position.x++;
-            if(check_collision(game) & COLLISION_RIGHT) {
-                game.next_pieces[0].position.x--;
-#ifdef DEBUG_INPUT_REJECTIONS
-                write_line("Right move rejected for " + piece_to_string(game.next_pieces[0]));
-#endif
-            } else game.frame_last_move = game.frame_num;
-        }
+        if(key_down(RIGHT_KEY) && (game.frame_last_move == 0 || game.frame_num - game.frame_last_move >= FRAME_RATE / SPEED_INPUT_MOVE))
+            handle_right_move(game);
 
-        if(key_down(DOWN_KEY) && (game.frame_last_down == 0 || game.frame_num - game.frame_last_down >= FRAME_RATE / SPEED_INPUT_FORCE_DOWN)) { // move piece down
-            game.next_pieces[0].position.y++;
-            if(check_collision(game) & COLLISION_BOTTOM) {
-                game.next_pieces[0].position.y--;
-#ifdef DEBUG_INPUT_REJECTIONS
-                write_line("Down move rejected for " + piece_to_string(game.next_pieces[0]));
-#endif
-            } else {
-                game.score += SCORE_FORCE_DOWN;
-                game.frame_last_down = game.frame_num;
-            }
-        }
+        if(key_down(DOWN_KEY) && (game.frame_last_down == 0 || game.frame_num - game.frame_last_down >= FRAME_RATE / SPEED_INPUT_FORCE_DOWN))
+            handle_down_move(game);
 
-        if(key_down(UP_KEY) && (game.frame_last_rotate == 0 || game.frame_num - game.frame_last_rotate >= FRAME_RATE / SPEED_INPUT_ROTATE)) { // rotate piece
-            piece new_piece = game.next_pieces[0]; // rotated piece
-            new_piece.rotation = (new_piece.rotation + 1) % 4;
+        if(key_down(UP_KEY) && (game.frame_last_rotate == 0 || game.frame_num - game.frame_last_rotate >= FRAME_RATE / SPEED_INPUT_ROTATE))
+            handle_rotate(game);
 
-            bool ok = false; // set if the piece fits
-
-            if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) ok = true; // ignore ceiling collision
-            else {
-                /* attempt wall kicking */
-                new_piece.position.x++; // right kick
-                if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) ok = true;
-                else {
-                    new_piece.position.x -= 2; // left kick
-                    if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) ok = true;
-                }
-            }
-
-            if(ok) {
-                game.next_pieces[0] = new_piece;
-                game.frame_last_rotate = game.frame_num;
-            }
-#ifdef DEBUG_INPUT_REJECTIONS
-            else write_line("Rotation rejected for " + piece_to_string(game.next_pieces[0]));
-#endif
-        }
-
-        if(key_down(SPACE_KEY) && (game.frame_last_swap == 0 || game.frame_num - game.frame_last_swap >= FRAME_RATE / SPEED_INPUT_SWAP)) { // swap piece
-            piece new_piece = game.next_pieces[1]; // the piece that we'll be swapping with
-
-            piece_position current_centre = piece_centre_point(game.next_pieces[0]); // the current falling piece's centre point coordinates
-            piece_position new_centre = piece_centre_point(new_piece, true); // the new falling piece's centre point offset
-
-            /* translate the new piece such that its centre point matches that of the old piece */
-            new_piece.position.x = current_centre.x - new_centre.x;
-            new_piece.position.y = current_centre.y - new_centre.y;
-
-            /* check if the new piece fits */
-            if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) {
-                /* yes, it fits */
-                position_piece(game.next_pieces[0]); // reposition back to the top of the field
-                game.next_pieces.push_back(game.next_pieces[0]); // push the old piece to the back
-                game.next_pieces.pop_front(); // pop the old piece off
-                game.next_pieces[0] = new_piece; // replace the new piece with the one with the calculated values
-
-                game.frame_last_swap = game.frame_num;
-            }
-#ifdef DEBUG_INPUT_REJECTIONS
-            else write_line("Swap rejected for " + piece_to_string(game.next_pieces[0]) + " (attempted to swap for " + piece_to_string(new_piece) + ")");
-#endif            
-        }
+        if(key_down(SPACE_KEY) && (game.frame_last_swap == 0 || game.frame_num - game.frame_last_swap >= FRAME_RATE / SPEED_INPUT_SWAP))
+            handle_swap(game);
 
         return true;
     }

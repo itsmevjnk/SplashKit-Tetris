@@ -315,6 +315,12 @@
  */
 #define SPEED_INPUT_ROTATE              4
 
+/**
+ * @brief Piece swapping speed (in swaps per second).
+ * 
+ */
+#define SPEED_INPUT_SWAP                4
+
 /* GAME OVER */
 
 /**

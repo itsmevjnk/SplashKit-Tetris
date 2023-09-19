@@ -50,6 +50,7 @@ struct hud_drawing_options {
  * @field frame_last_move The frame number of the last accepted left/right move action.
  * @field frame_last_down The frame number of the last accepted down move action.
  * @field frame_last_rotate The frame number of the last accepted rotation action.
+ * @field frame_last_swap The frame number of the last accepted piece swap action.
  * 
  * @field hud_options HUD drawing options.
  * 
@@ -73,6 +74,7 @@ struct game_data {
     uint64_t frame_last_move;
     uint64_t frame_last_down;
     uint64_t frame_last_rotate;
+    uint64_t frame_last_swap;
 
     /* HUD */
     hud_drawing_options hud_options;

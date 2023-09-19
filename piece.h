@@ -96,6 +96,13 @@ struct piece {
 extern const piece_type piece_types[7]; // NOTE: extern is used so that g++ wouldn't complain
 
 /**
+ * @brief Position (or reposition) a piece to the top of the playing field.
+ * 
+ * @param p The piece to be (re)positioned.
+ */
+void position_piece(piece &p);
+
+/**
  * @brief Generate a random piece and place it right above the playing field for descent.
  * 
  * @return piece The resulting piece.
@@ -143,6 +150,15 @@ void draw_piece(const piece &p);
  * @param tight Tight drawing mode; when this is set, the position will be treated as the position of the actual start of the piece and not the start of the piece's bitmap.
  */
 void draw_piece(const piece &p, const piece_position &position, bool absolute = true, bool tight = false);
+
+/**
+ * @brief Calculate the centre point coordinates of a given piece.
+ * 
+ * @param p The input piece.
+ * @param offset Whether to only calculate the centre point offset (as opposed to the absolute position within the playing field). Disabled by default.
+ * @return piece_position The piece's centre position.
+ */
+piece_position piece_centre_point(const piece &p, bool offset = false);
 
 /**
  * @brief Generate a descriptive string of a piece. Used for debugging.

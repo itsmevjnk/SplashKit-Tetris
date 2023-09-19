@@ -166,6 +166,31 @@ bool handle_input(game_data &game) {
 #endif
         }
 
+        if(key_down(SPACE_KEY) && (game.frame_last_swap == 0 || game.frame_num - game.frame_last_swap >= FRAME_RATE / SPEED_INPUT_SWAP)) { // swap piece
+            piece new_piece = game.next_pieces[1]; // the piece that we'll be swapping with
+
+            piece_position current_centre = piece_centre_point(game.next_pieces[0]); // the current falling piece's centre point coordinates
+            piece_position new_centre = piece_centre_point(new_piece, true); // the new falling piece's centre point offset
+
+            /* translate the new piece such that its centre point matches that of the old piece */
+            new_piece.position.x = current_centre.x - new_centre.x;
+            new_piece.position.y = current_centre.y - new_centre.y;
+
+            /* check if the new piece fits */
+            if(!(check_collision(game, new_piece) & ~COLLISION_CEILING)) {
+                /* yes, it fits */
+                position_piece(game.next_pieces[0]); // reposition back to the top of the field
+                game.next_pieces.push_back(game.next_pieces[0]); // push the old piece to the back
+                game.next_pieces.pop_front(); // pop the old piece off
+                game.next_pieces[0] = new_piece; // replace the new piece with the one with the calculated values
+
+                game.frame_last_swap = game.frame_num;
+            }
+#ifdef DEBUG_INPUT_REJECTIONS
+            else write_line("Swap rejected for " + piece_to_string(game.next_pieces[0]) + " (attempted to swap for " + piece_to_string(new_piece) + ")");
+#endif            
+        }
+
         return true;
     }
 }

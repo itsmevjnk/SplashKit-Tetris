@@ -15,6 +15,12 @@ using namespace std;
  */
 #define FIELD_DRAW_Y            (FIELD_Y + FIELD_BORDER_WIDTH)
 
+/* (re)position a piece */
+void position_piece(piece &p) {
+    p.position.y = -(p.type->bitmaps[p.rotation].height + p.type->bitmaps[p.rotation].y);
+    p.position.x = rnd(-p.type->bitmaps[p.rotation].x, FIELD_WIDTH - (p.type->bitmaps[p.rotation].x + p.type->bitmaps[p.rotation].width));
+}
+
 /* generate a new random piece */
 piece new_piece() {
     piece result;
@@ -22,8 +28,7 @@ piece new_piece() {
     result.type = &piece_types[rnd(6)]; // see piece_types.cpp
     result.rotation = rnd(3); // there are 4 possible rotated variants for each piece, also see piece_types.cpp
     
-    result.position.y = -(result.type->bitmaps[result.rotation].height + result.type->bitmaps[result.rotation].y);
-    result.position.x = rnd(-result.type->bitmaps[result.rotation].x, FIELD_WIDTH - (result.type->bitmaps[result.rotation].x + result.type->bitmaps[result.rotation].width));
+    position_piece(result);
 
     return result;
 }
@@ -130,6 +135,16 @@ void draw_piece(const piece &p, const piece_position &position, bool absolute, b
             }
         }
     }
+}
+
+/* calculate centre point of a piece */
+piece_position piece_centre_point(const piece &p, bool offset) {
+    piece_position result;
+
+    result.x = ((offset) ? 0 : p.position.x) + p.type->bitmaps[p.rotation].x + p.type->bitmaps[p.rotation].width / 2;
+    result.y = ((offset) ? 0 : p.position.y) + p.type->bitmaps[p.rotation].y + p.type->bitmaps[p.rotation].height / 2;
+
+    return result;
 }
 
 /* FOR DEBUGGING - get a descriptive string of a piece */

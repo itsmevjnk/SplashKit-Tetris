@@ -47,13 +47,13 @@ game_data new_game() {
     // write_line("HUD content size: " + to_string(result.hud_options.content_width) + "x" + to_string(result.hud_options.content_height));
 
 #if HUD_X >= 0
-    result.hud_options.start_x = HUD_X;
+    result.hud_options.start_x = HUD_X + 2 * (HUD_PADDING + HUD_BORDER_WIDTH);
 #else
     result.hud_options.start_x = (3 * WINDOW_WIDTH / 4) - (result.hud_options.content_width + 2 * (HUD_PADDING + HUD_BORDER_WIDTH)) / 2;
 #endif
 
 #if HUD_Y >= 0
-    result.hud_options.start_y = HUD_Y;
+    result.hud_options.start_y = HUD_Y + 2 * (HUD_PADDING + HUD_BORDER_WIDTH);
 #else
     if(result.hud_options.content_height <= WINDOW_WIDTH / 2)
         result.hud_options.start_y = (WINDOW_HEIGHT / 4) - (result.hud_options.content_height + 2 * (HUD_PADDING + HUD_BORDER_WIDTH)) / 2;
@@ -65,11 +65,6 @@ game_data new_game() {
 }
 
 /* check collision (overlaps) between the falling piece and its surrounding field */
-#define COLLISION_LEFT          (1 << 0)
-#define COLLISION_RIGHT         (1 << 1)
-#define COLLISION_CEILING       (1 << 2)
-#define COLLISION_BOTTOM        (1 << 3) // or floor
-
 uint8_t check_collision(const game_data &game, const piece &test_piece) {
     uint8_t result = 0;
 
@@ -189,7 +184,7 @@ void draw_field(const game_data &game) {
 }
 
 /* convert an integer to a string, optionally with zero padding */
-string int_to_string(int num, int padding = 0, char pad_char = '0') {
+static string int_to_string(int num, int padding = 0, char pad_char = '0') {
     string result = to_string(num);
     if(padding > 0) result = string(padding - result.length(), pad_char) + result;
     return result;

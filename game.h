@@ -10,18 +10,6 @@
 using namespace std;
 
 /**
- * @brief Enumeration of game input actions.
- * 
- */
-enum game_input_action {
-    NO_INPUT,
-    MOVE_LEFT,
-    MOVE_RIGHT,
-    ROTATE,
-    FORCE_DOWN
-};
-
-/**
  * @brief HUD drawing options; this is used primarily in draw_hud().
  * 
  * @field start_x The X coordinate of the HUD content's top left corner (within the padding and border).
@@ -51,13 +39,20 @@ struct hud_drawing_options {
  * 
  * @field score The player's score.
  * @field level The player's level (zero-based).
+ * 
  * @field playing_field The playing field.
  * @field next_pieces The falling and next pieces queue.
+ * 
  * @field frame_num The current frame number.
+ * 
  * @field frame_last_update The frame number of the last game update (in normal operations mode).
- * @field last_input_action The last input action from the player.
- * @field frame_last_input The frame number where the last input action was made and accepted.
+ * 
+ * @field frame_last_move The frame number of the last accepted left/right move action.
+ * @field frame_last_down The frame number of the last accepted down move action.
+ * @field frame_last_rotate The frame number of the last accepted rotation action.
+ * 
  * @field hud_options HUD drawing options.
+ * 
  * @field game_over Game over flag.
  * @field game_over_filled Set after the playing field has been filled for the game over screen.
  * @field frame_game_over The frame number where the game over condition was detected.
@@ -66,15 +61,18 @@ struct hud_drawing_options {
 struct game_data {
     int score;
     int level;
+
     piece_colour playing_field[FIELD_HEIGHT][FIELD_WIDTH];
     deque<piece> next_pieces;
 
     uint64_t frame_num;
+
     uint64_t frame_last_update;
 
     /* input */
-    game_input_action last_input_action;
-    uint64_t frame_last_input;
+    uint64_t frame_last_move;
+    uint64_t frame_last_down;
+    uint64_t frame_last_rotate;
 
     /* HUD */
     hud_drawing_options hud_options;

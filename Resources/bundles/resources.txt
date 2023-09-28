@@ -1,1 +1,1 @@
-FONT,GameFont,PerfectDOSVGA437.ttf
+FONT,GameFont,MxPlus_IBM_VGA_8x16.ttf

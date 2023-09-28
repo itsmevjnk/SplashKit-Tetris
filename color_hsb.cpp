@@ -38,7 +38,7 @@ void color_hsb::normalise() {
     else if(alpha > 1) alpha = 1;
 }
 
-color_hsb& color_hsb::operator+(const color_hsb &c2) {
+color_hsb& color_hsb::do_add(const color_hsb &c2) {
     hue += c2.hue;
     saturation += c2.saturation;
     brightness += c2.brightness;
@@ -47,7 +47,15 @@ color_hsb& color_hsb::operator+(const color_hsb &c2) {
     return *this;
 }
 
-color_hsb& color_hsb::operator-(const color_hsb &c2) {
+color_hsb& color_hsb::operator+(const color_hsb &c2) {
+    return do_add(c2);
+}
+
+color_hsb& color_hsb::operator+=(const color_hsb &c2) {
+    return do_add(c2);
+}
+
+color_hsb& color_hsb::do_sub(const color_hsb &c2) {
     hue -= c2.hue;
     saturation -= c2.saturation;
     brightness -= c2.brightness;
@@ -56,7 +64,15 @@ color_hsb& color_hsb::operator-(const color_hsb &c2) {
     return *this;
 }
 
-color_hsb& color_hsb::operator*(const color_hsb &c2) {
+color_hsb& color_hsb::operator-(const color_hsb &c2) {
+    return do_sub(c2);
+}
+
+color_hsb& color_hsb::operator-=(const color_hsb &c2) {
+    return do_sub(c2);
+}
+
+color_hsb& color_hsb::do_mul_color(const color_hsb &c2) {
     hue *= c2.hue;
     saturation *= c2.saturation;
     brightness *= c2.brightness;
@@ -65,7 +81,15 @@ color_hsb& color_hsb::operator*(const color_hsb &c2) {
     return *this;
 }
 
-color_hsb& color_hsb::operator/(const color_hsb &c2) {
+color_hsb& color_hsb::operator*(const color_hsb &c2) {
+    return do_mul_color(c2);
+}
+
+color_hsb& color_hsb::operator*=(const color_hsb &c2) {
+    return do_mul_color(c2);
+}
+
+color_hsb& color_hsb::do_div_color(const color_hsb &c2) {
     hue /= c2.hue;
     saturation /= c2.saturation;
     brightness /= c2.brightness;
@@ -74,16 +98,50 @@ color_hsb& color_hsb::operator/(const color_hsb &c2) {
     return *this;
 }
 
-color_hsb& color_hsb::operator*(const double &k) {
+color_hsb& color_hsb::operator/(const color_hsb &c2) {
+    return do_div_color(c2);
+}
+
+color_hsb& color_hsb::operator/=(const color_hsb &c2) {
+    return do_div_color(c2);
+}
+
+color_hsb& color_hsb::do_mul_double(const double &k) {
     alpha *= k;
     if(alpha < 0) alpha = 0;
     else if(alpha > 1) alpha = 1;
     return *this;
 }
 
-color_hsb& color_hsb::operator/(const double &k) {
+color_hsb& color_hsb::operator*(const double &k) {
+    return do_mul_double(k);
+}
+
+color_hsb& color_hsb::operator*=(const double &k) {
+    return do_mul_double(k);
+}
+
+color_hsb& color_hsb::do_div_double(const double &k) {
     alpha /= k;
     if(alpha < 0) alpha = 0;
     else if(alpha > 1) alpha = 1;
+    return *this;
+}
+
+color_hsb& color_hsb::operator/(const double &k) {
+    return do_div_double(k);
+}
+
+color_hsb& color_hsb::operator/=(const double &k) {
+    return do_div_double(k);
+}
+
+/* multiply all values by k */
+color_hsb& color_hsb::multiply_values(double k) {
+    hue *= k;
+    saturation *= k;
+    brightness *= k;
+    alpha *= k;
+    normalise();
     return *this;
 }

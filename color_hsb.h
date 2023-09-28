@@ -66,12 +66,28 @@ class color_hsb {
         color_hsb& operator+(const color_hsb &c2);
 
         /**
+         * @brief Alias for operator+.
+         * 
+         * @param c2 The colour to be added with.
+         * @return color_hsb& The resulting HSB colour.
+         */
+        color_hsb& operator+=(const color_hsb &c2);
+
+        /**
          * @brief Overload function for subtracting HSB colours (not colour mixing).
          * 
          * @param c2 The colour to be subtracted from.
          * @return color_hsb& The resulting HSB colour.
          */
         color_hsb& operator-(const color_hsb &c2);
+
+        /**
+         * @brief Alias for operator-.
+         * 
+         * @param c2 The colour to be subtracted from.
+         * @return color_hsb& The resulting HSB colour.
+         */
+        color_hsb& operator-=(const color_hsb &c2);
 
         /**
          * @brief Overload function for multiplying HSB colours.
@@ -82,12 +98,28 @@ class color_hsb {
         color_hsb& operator*(const color_hsb &c2);
 
         /**
+         * @brief Alias for operator*(color_hsb).
+         * 
+         * @param c2 The colour to be multiplied with.
+         * @return color_hsb& The resulting HSB colour.
+         */
+        color_hsb& operator*=(const color_hsb &c2);
+
+        /**
          * @brief Overload function for dividing HSB colours.
          * 
          * @param c2 The colour to be divided by.
          * @return color_hsb& The resulting HSB colour.
          */
         color_hsb& operator/(const color_hsb &c2);
+
+        /**
+         * @brief Alias for operator/(color_hsb).
+         * 
+         * @param c2 The colour to be divided by.
+         * @return color_hsb& The resulting HSB colour.
+         */
+        color_hsb& operator/=(const color_hsb &c2);
 
         /**
          * @brief Overload function for changing brightness by multiplying with a numeric value.
@@ -98,6 +130,14 @@ class color_hsb {
         color_hsb& operator*(const double &k);
 
         /**
+         * @brief Alias for operator*(double).
+         * 
+         * @param k The colour brightness multiplier.
+         * @return color_hsb& The resulting HSB colour.
+         */
+        color_hsb& operator*=(const double &k);
+
+        /**
          * @brief Overload function for changing brightness by dividing by a numeric value.
          * 
          * @param k The colour brightness divider.
@@ -106,10 +146,75 @@ class color_hsb {
         color_hsb& operator/(const double &k);
 
         /**
+         * @brief Alias for operator/(double).
+         * 
+         * @param k The colour brightness divider.
+         * @return color_hsb& The resulting HSB colour.
+         */
+        color_hsb& operator/=(const double &k);
+
+        /**
          * @brief Normalise the HSB color object's values.
          * 
          */
         void normalise();
+
+        /**
+         * @brief Multiply the colour's values by a multiplier.
+         * 
+         * @param k The multiplier.
+         * @return color_hsb& The resulting HSB colour.
+         */
+        color_hsb& multiply_values(double k);
+    
+    private:
+        /**
+         * @brief Internal function for operator+.
+         * 
+         * @param c2 The color to be added.
+         * @return color_hsb& The resulting color.
+         */
+        color_hsb& do_add(const color_hsb &c2);
+
+        /**
+         * @brief Internal function for operator-.
+         * 
+         * @param c2 The color to be subtracted from.
+         * @return color_hsb& The resulting color.
+         */
+        color_hsb& do_sub(const color_hsb &c2);
+
+        /**
+         * @brief Internal function for operator*(color_hsb).
+         * 
+         * @param c2 The color to be multiplied with.
+         * @return color_hsb& The resulting color.
+         */
+        color_hsb& do_mul_color(const color_hsb &c2);
+
+        /**
+         * @brief Internal function for operator/(color_hsb).
+         * 
+         * @param c2 The color to be divided by.
+         * @return color_hsb& The resulting color.
+         */
+        color_hsb& do_div_color(const color_hsb &c2);
+
+        /**
+         * @brief Internal function for operator*(double).
+         * 
+         * @param k The color multiplier.
+         * @return color_hsb& The resulting color.
+         */
+        color_hsb& do_mul_double(const double &k);
+
+        /**
+         * @brief Internal function for operator/(double).
+         * 
+         * @param k The color divider.
+         * @return color_hsb& The resulting color.
+         */
+        color_hsb& do_div_double(const double &k);
 };
 
 #endif

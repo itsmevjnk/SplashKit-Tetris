@@ -20,15 +20,25 @@ int main() {
     window win = open_window(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
     clear_window(win, WINDOW_BG_COLOR);
 
-    while(true) {
-        game_data game = new_game(); // set up new game
+    bool game_started = false; // set when the game has started (i.e. no longer at title screen)
+    game_data game;
 
+    while(true) {
         while(!quit_requested()) {
             /* run game routines until the user stops playing or restarts the game after a game over */
             process_events();
-            if(handle_input(game) == false) break; // create new game (i.e. game over)
-            update_game(game);
-            draw_game(game);
+            
+            if(!game_started) {
+                /* title screen */
+                game_started = true; // TODO: add title screen
+                if(game_started) game = new_game(); // set up new game
+            } else {
+                /* the actual game */
+                game_started = handle_game_input(game);
+                if(!game_started) break; // get back to title screen (i.e. game over)
+                update_game(game);
+                draw_game(game);
+            }
         }
 
         if(quit_requested()) break; // quit has been requested and it's not just a game over, so we need to exit

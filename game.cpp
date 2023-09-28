@@ -197,7 +197,7 @@ void handle_swap(game_data &game) {
 }
 
 /* handle game inputs */
-bool handle_input(game_data &game) {
+bool handle_game_input(game_data &game) {
     if(game.game_over) return handle_game_over();
     else {
         if(key_down(LEFT_KEY) && (game.frame_last_move == 0 || game.frame_num - game.frame_last_move >= FRAME_RATE / SPEED_INPUT_MOVE))

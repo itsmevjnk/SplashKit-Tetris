@@ -195,7 +195,7 @@ void handle_swap(game_data &game);
  * @return true Returned if the game can proceed as normal.
  * @return false Returned if a new game is to be created (i.e. after a game over).
  */
-bool handle_input(game_data &game);
+bool handle_game_input(game_data &game);
 
 /**
  * @brief Draw the playing field and the falling piece.

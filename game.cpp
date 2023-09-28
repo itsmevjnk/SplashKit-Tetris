@@ -70,6 +70,8 @@ game_data new_game() {
         result.hud_options.start_y = (WINDOW_HEIGHT / 2) - (result.hud_options.content_height + 2 * (HUD_PADDING + HUD_BORDER_WIDTH)) / 2;
 #endif
 
+    clear_screen(GAME_BG_COLOR);
+
     return result;
 }
 
@@ -304,8 +306,6 @@ void draw_game(const game_data &game) {
     if(game.game_over_filled) draw_game_over(game);
 
     draw_hud(game);
-
-    refresh_screen(FRAME_RATE);
 }
 
 /* merge falling piece into playing field */

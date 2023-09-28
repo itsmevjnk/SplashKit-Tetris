@@ -32,10 +32,16 @@
 #define WINDOW_HEIGHT                   480
 
 /**
- * @brief The game window's background colour.
+ * @brief The title screen's background colour. 
  * 
  */
-#define WINDOW_BG_COLOR                 COLOR_BLUE
+#define TITLE_BG_COLOR                  COLOR_BLACK
+
+/**
+ * @brief The game screen's background colour.
+ * 
+ */
+#define GAME_BG_COLOR                   COLOR_BLUE
 
 /**
  * @brief The game's frame rate (in frames per second).
@@ -372,5 +378,19 @@
  * 
  */
 #define PIECE_TOTAL_SIZE                (PIECE_SIZE + 2 * PIECE_MARGIN)
+
+/* TITLE SCREEN CONFIGURATION */
+
+#define TITLE_HEADER_CENTER_X               (WINDOW_WIDTH / 2)
+
+#define TITLE_HEADER_CENTER_Y               (WINDOW_HEIGHT / 4)
+
+#define TITLE_HEADER_SIZE_INIT              (WINDOW_HEIGHT / 16)
+
+#define TITLE_HEADER_SIZE_FINAL             (WINDOW_HEIGHT / 4)
+
+#define TITLE_HEADER_GROW_TIME              3
+
+#define TITLE_HEADER_COLOR_SHIFT_PERIOD     7
 
 #endif

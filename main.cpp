@@ -1,4 +1,5 @@
 #include "game.h"
+#include "title.h"
 #include "config.h"
 
 /**
@@ -17,11 +18,12 @@ void load_resources() {
 int main() {
     load_resources(); // load resource bundle
     
-    window win = open_window(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
-    clear_window(win, WINDOW_BG_COLOR);
+    open_window(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     bool game_started = false; // set when the game has started (i.e. no longer at title screen)
     game_data game;
+
+    title_data title = new_title();
 
     while(true) {
         while(!quit_requested()) {
@@ -30,8 +32,13 @@ int main() {
             
             if(!game_started) {
                 /* title screen */
-                game_started = true; // TODO: add title screen
+                // game_started = true; // TODO: add title screen
+                game_started = handle_title_input(title);
                 if(game_started) game = new_game(); // set up new game
+                else {
+                    update_title(title);
+                    draw_title(title);
+                }
             } else {
                 /* the actual game */
                 game_started = handle_game_input(game);
@@ -39,6 +46,8 @@ int main() {
                 update_game(game);
                 draw_game(game);
             }
+
+            refresh_screen(FRAME_RATE);
         }
 
         if(quit_requested()) break; // quit has been requested and it's not just a game over, so we need to exit

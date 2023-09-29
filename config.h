@@ -385,6 +385,10 @@
 
 #define TITLE_HEADER_CENTER_Y               (WINDOW_HEIGHT / 4)
 
+#define TITLE_MENU_CENTER_X                 (WINDOW_WIDTH / 2)
+
+#define TITLE_MENU_CENTER_Y                 (3 * WINDOW_HEIGHT / 4)
+
 #define TITLE_HEADER_SIZE_INIT              (WINDOW_HEIGHT / 16)
 
 #define TITLE_HEADER_SIZE_FINAL             (WINDOW_HEIGHT / 4)
@@ -396,5 +400,9 @@
 #define TITLE_HEADER_SWITCH_PERIOD          1.5
 
 #define TITLE_HEADER_SWITCH_SCROLL_TIME     0.5
+
+#define TITLE_MENU_TEXT_SIZE                32
+
+#define TITLE_MENU_COLOR                    COLOR_WHITE
 
 #endif

@@ -1,15 +1,28 @@
 #include "title.h"
+#include "utils.h"
 #include "config.h"
-
-using namespace std;
 
 /* create new title data structure */
 title_data new_title() {
     title_data result;
 
+    result.selection = START_GAME;
+    result.level = 0;
     result.frame_num = 0;
     result.header_font = font_named("GameFont");
     result.menu_font = font_named("GameFont");
+
+    /* calculate menu X offset */
+    result.menu_xoff = text_width("\x10 ", result.menu_font, TITLE_MENU_TEXT_SIZE);
+
+    /* calculate menu width */
+    result.menu_width = text_width("START GAME", result.menu_font, TITLE_MENU_TEXT_SIZE);
+    result.menu_width = MAX(result.menu_width, text_width("HIGH SCORES", result.menu_font, TITLE_MENU_TEXT_SIZE));
+    result.menu_width = MAX(result.menu_width, text_width("LEVEL: \x11 " + string(HUD_SCORE_WIDTH, '0') + " \x10", result.menu_font, TITLE_MENU_TEXT_SIZE));
+    result.menu_width += result.menu_xoff;
+
+    /* calculate menu height */
+    result.menu_height = 3 * text_height("0", result.menu_font, TITLE_MENU_TEXT_SIZE);
 
     return result;
 }
@@ -55,7 +68,6 @@ void draw_header(const title_data &title) {
     bitmap header = create_bitmap("HeaderText", width, height);
     draw_text_on_bitmap(header, "TETRIS", header_color, title.header_font, font_size, 0, (show_en) ? ystart_2 : ystart_1);
     draw_text_on_bitmap(header, "ТЕТРИС", header_color, title.header_font, font_size, 0, (show_en) ? ystart_1 : ystart_2);
-
     
     /* draw the actual header */
     // draw_text((show_en) ? "TETRIS" : "ТЕТРИС", header_color, title.header_font, font_size, TITLE_HEADER_CENTER_X - width / 2, TITLE_HEADER_CENTER_Y - height / 2);
@@ -63,9 +75,29 @@ void draw_header(const title_data &title) {
     free_bitmap(header);
 }
 
+/* draw title menu */
+void draw_menu(const title_data &title) {
+    int char_height = title.menu_height / 3; // character height
+    bitmap menu = create_bitmap("Menu", title.menu_width, title.menu_height); // menu bitmap for ease of drawing
+
+    /* draw menu selections */
+    draw_text_on_bitmap(menu, "START GAME", TITLE_MENU_COLOR, title.header_font, TITLE_MENU_TEXT_SIZE, title.menu_xoff, 0);
+    draw_text_on_bitmap(menu, "HIGH SCORES", TITLE_MENU_COLOR, title.header_font, TITLE_MENU_TEXT_SIZE, title.menu_xoff, char_height);
+    draw_text_on_bitmap(menu, string("LEVEL: ") + ((title.selection == LEVEL_SETTING) ? string("\x11 ") : string("  ")) + int_to_string(title.level + 1, 2) + ((title.selection == LEVEL_SETTING) ? string(" \x10") : string("  ")), TITLE_MENU_COLOR, title.header_font, TITLE_MENU_TEXT_SIZE, title.menu_xoff, 2 * char_height);
+
+    /* draw pointer */
+    if(title.selection != LEVEL_SETTING)
+        draw_text_on_bitmap(menu, "\x10", TITLE_MENU_COLOR, title.header_font, TITLE_MENU_TEXT_SIZE, 0, (int)title.selection * char_height);
+
+    /* finally draw the bitmap to the window */
+    draw_bitmap(menu, TITLE_MENU_CENTER_X - (title.menu_width - title.menu_xoff) / 2 + title.menu_xoff, TITLE_MENU_CENTER_Y - title.menu_height / 2);
+    free_bitmap(menu);
+}
+
 /* draw title screen */
 void draw_title(const title_data &title) {
     clear_screen(TITLE_BG_COLOR);
     draw_header(title);
+    draw_menu(title);
 }
 

@@ -4,12 +4,26 @@
 #include <bits/stdc++.h>
 #include "splashkit.h"
 
-typedef struct {
+enum title_selection {
+    START_GAME,
+    HI_SCORES,
+    LEVEL,
+    LEVEL_SETTING
+};
+
+struct title_data {
+    title_selection selection;
+    int level;
+
     uint64_t frame_num;
 
     font header_font;
     font menu_font;
-} title_data;
+
+    int menu_width;
+    int menu_height;
+    int menu_xoff;
+};
 
 title_data new_title();
 

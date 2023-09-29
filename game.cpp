@@ -8,7 +8,7 @@ using namespace std;
 game_data new_game() {
     game_data result;
 
-    result.score = 0; result.level = 0;
+    result.score = 0; result.level = 0; result.score_lvlup = 0;
     result.frame_num = 0; result.frame_last_update = 0;
     result.frame_last_move = 0; result.frame_last_down = 0; result.frame_last_rotate = 0;
 
@@ -343,7 +343,7 @@ void award_score(game_data &game, const removed_rows &rows) {
         case 4:
             /* tetris */
             game.score += SCORE_CLEAR_4;
-            // game.level++;
+            game.score_lvlup = game.score; game.level++; // levelling up based on tetris clearance
             break;
         case 2:
             /* double */
@@ -372,7 +372,11 @@ void award_score(game_data &game, const removed_rows &rows) {
             break;
     }
 
-    game.level = game.score / SCORE_LEVEL_UP; // easiest way to do it really
+    /* levelling up based on score */
+    if(game.score - game.score_lvlup >= SCORE_LEVEL_UP) {
+        game.score_lvlup += SCORE_LEVEL_UP;
+        game.level++;
+    }
 }
 
 /* generate new next piece */

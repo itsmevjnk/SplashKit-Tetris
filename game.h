@@ -40,6 +40,8 @@ struct hud_drawing_options {
  * @field score The player's score.
  * @field level The player's level (zero-based).
  * 
+ * @field score_lvlup The player's score on the last level increment.
+ * 
  * @field playing_field The playing field.
  * @field next_pieces The falling and next pieces queue.
  * 
@@ -62,6 +64,8 @@ struct hud_drawing_options {
 struct game_data {
     int score;
     int level;
+
+    int score_lvlup;
 
     piece_colour playing_field[FIELD_HEIGHT][FIELD_WIDTH];
     deque<piece> next_pieces;

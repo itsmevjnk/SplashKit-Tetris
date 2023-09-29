@@ -26,8 +26,7 @@ int main() {
 
     json settings = load_settings(); // load settings from JSON file
 
-    title_data title = new_title();
-    title.level = get_level(settings); // load saved level setting
+    title_data title = new_title(settings);
 
     while(true) {
         while(!quit_requested()) {
@@ -39,8 +38,8 @@ int main() {
                 // game_started = true; // TODO: add title screen
                 game_started = handle_title_input(title);
                 if(game_started) {
-                    game = new_game(); // set up new game
-                    game.level = title.level; // load level from title screen
+                    set_level(settings, title.level); // save level setting for persistence
+                    game = new_game(settings); // set up new game
                 } else {
                     update_title(title);
                     draw_title(title);
@@ -66,9 +65,7 @@ int main() {
         if(quit_requested()) break; // quit has been requested and it's not just a game over, so we need to exit
     }
 
-    /* save level settings for persistence */
-    set_level(settings, title.level);
-    save_settings(settings);
+    save_settings(settings); // commit changes to settings JSON file
 
     return 0;
 }

@@ -1,14 +1,15 @@
 #include "game.h"
 #include "piece.h"
 #include "utils.h"
+#include "settings.h"
 
 using namespace std;
 
 /* create new game struct */
-game_data new_game() {
+game_data new_game(int level) {
     game_data result;
 
-    result.score = 0; result.level = 0; result.score_lvlup = 0;
+    result.score = 0; result.level = level; result.score_lvlup = 0;
     result.frame_num = 0; result.frame_last_update = 0;
     result.frame_last_move = 0; result.frame_last_down = 0; result.frame_last_rotate = 0;
 
@@ -62,6 +63,10 @@ game_data new_game() {
     clear_screen(GAME_BG_COLOR);
 
     return result;
+}
+
+game_data new_game(json settings) {
+    return new_game(get_level(settings));
 }
 
 /* check collision (overlaps) between the falling piece and its surrounding field */

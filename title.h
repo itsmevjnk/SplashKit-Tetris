@@ -25,7 +25,9 @@ struct title_data {
     int menu_xoff;
 };
 
-title_data new_title();
+title_data new_title(int level = 0);
+
+title_data new_title(json settings);
 
 bool handle_title_input(title_data &title);
 

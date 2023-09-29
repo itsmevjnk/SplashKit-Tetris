@@ -1,13 +1,14 @@
 #include "title.h"
 #include "utils.h"
 #include "config.h"
+#include "settings.h"
 
 /* create new title data structure */
-title_data new_title() {
+title_data new_title(int level) {
     title_data result;
 
     result.selection = START_GAME;
-    result.level = 0;
+    result.level = level;
     result.frame_num = 0; result.frame_last_lr = 0; result.frame_last_ud = 0;
     result.header_font = font_named("GameFont");
     result.menu_font = font_named("GameFont");
@@ -25,6 +26,10 @@ title_data new_title() {
     result.menu_height = 3 * text_height("0", result.menu_font, TITLE_MENU_TEXT_SIZE);
 
     return result;
+}
+
+title_data new_title(json settings) {
+    return new_title(get_level(settings));
 }
 
 /* handle title input */

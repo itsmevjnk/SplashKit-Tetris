@@ -102,11 +102,20 @@ struct removed_rows {
 };
 
 /**
- * @brief Create a new game.
+ * @brief Create a new game given the starting level.
  * 
+ * @param level The game's starting level (defaults to 1st level).
  * @return game_data The created game data structure.
  */
-game_data new_game();
+game_data new_game(int level = 0);
+
+/**
+ * @brief Create a new game given the settings JSON struct to load the level from.
+ * 
+ * @param settings The settings JSON structure.
+ * @return game_data The created game data structure.
+ */
+game_data new_game(json settings);
 
 /**
  * @brief Bitmask for left side collision. Returned by check_collision().

@@ -333,6 +333,10 @@
  */
 #define SPEED_INPUT_SWAP                4
 
+/**
+ * @brief Menu input speed (in inputs per second).
+ * 
+ */
 #define SPEED_INPUT_MENU                4
 
 /* GAME OVER */
@@ -383,46 +387,126 @@
 
 /* TITLE SCREEN CONFIGURATION */
 
+/**
+ * @brief The header (TETRIS/ТЕТРИС)'s centre X coordinate.
+ * 
+ */
 #define TITLE_HEADER_CENTER_X               (WINDOW_WIDTH / 2)
 
+/**
+ * @brief The header (TETRIS/ТЕТРИС)'s centre Y coordinate.
+ * 
+ */
 #define TITLE_HEADER_CENTER_Y               (WINDOW_HEIGHT / 4)
 
+/**
+ * @brief The title menu's centre X coordinate.
+ * 
+ */
 #define TITLE_MENU_CENTER_X                 (WINDOW_WIDTH / 2)
 
+/**
+ * @brief The title menu's centre Y coordinate.
+ * 
+ */
 #define TITLE_MENU_CENTER_Y                 (3 * WINDOW_HEIGHT / 4)
 
+/**
+ * @brief The header's initial font size (in pixels).
+ * 
+ */
 #define TITLE_HEADER_SIZE_INIT              (WINDOW_HEIGHT / 16)
 
+/**
+ * @brief The header's final font size (in pixels).
+ * 
+ */
 #define TITLE_HEADER_SIZE_FINAL             (WINDOW_HEIGHT / 4)
 
+/**
+ * @brief The header's size growth time (in seconds).
+ * 
+ */
 #define TITLE_HEADER_GROW_TIME              3
 
+/**
+ * @brief The header's hue shifting period (in seconds).
+ * 
+ */
 #define TITLE_HEADER_COLOR_SHIFT_PERIOD     7
 
+/**
+ * @brief The header's English/Russian text switching period, including scrolling time (in seconds).
+ * 
+ */
 #define TITLE_HEADER_SWITCH_PERIOD          1.5
 
+/**
+ * @brief The time taken to scroll between English and Russian text for the header (in seconds).
+ * 
+ */
 #define TITLE_HEADER_SWITCH_SCROLL_TIME     0.5
 
+/**
+ * @brief The title menu's font size (in pixels).
+ * 
+ */
 #define TITLE_MENU_TEXT_SIZE                32
 
+/**
+ * @brief The title menu's text colour.
+ * 
+ */
 #define TITLE_MENU_COLOR                    COLOR_WHITE
 
 /* SCOREBOARD CONFIGURATION */
 
+/**
+ * @brief The scoreboard's title font size (in pixels).
+ * 
+ */
 #define SCOREBOARD_TITLE_TEXT_SIZE          (HUD_TEXT_SIZE * 2)
 
+/**
+ * @brief The scoreboard's contents font size (in pixels).
+ * 
+ */
 #define SCOREBOARD_CONTENT_TEXT_SIZE        HUD_TEXT_SIZE
 
+/**
+ * @brief The maximum length of names in the scoreboard.
+ * 
+ */
 #define SCOREBOARD_NAME_MAXLEN              16
 
+/**
+ * @brief The scoreboard's border width (in pixels).
+ * 
+ */
 #define SCOREBOARD_BORDER_WIDTH             HUD_BORDER_WIDTH
 
+/**
+ * @brief The scoreboard's border colour.
+ * 
+ */
 #define SCOREBOARD_BORDER_COLOR             HUD_BORDER_COLOR
 
+/**
+ * @brief The scoreboard's padding width (in pixels).
+ * 
+ */
 #define SCOREBOARD_PADDING                  HUD_PADDING
 
+/**
+ * @brief The scoreboard's background colour.
+ * 
+ */
 #define SCOREBOARD_BG_COLOR                 HUD_BG_COLOR
 
+/**
+ * @brief The scoreboard's text colour.
+ * 
+ */
 #define SCOREBOARD_TEXT_COLOR               HUD_TEXT_COLOR
 
 #endif

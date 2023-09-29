@@ -79,9 +79,28 @@ void update_title(title_data &title) {
     title.frame_num++;
 }
 
+/**
+ * @brief TITLE_HEADER_GROW_TIME in frames.
+ * 
+ */
 #define TITLE_HEADER_GROW_FRAMES                    (int)(FRAME_RATE * TITLE_HEADER_GROW_TIME)
+
+/**
+ * @brief TITLE_HEADER_COLOR_SHIFT_PERIOD in frames.
+ * 
+ */
 #define TITLE_HEADER_COLOR_SHIFT_FRAMES             (int)(FRAME_RATE * TITLE_HEADER_COLOR_SHIFT_PERIOD)
+
+/**
+ * @brief TITLE_HEADER_SWITCH_PERIOD in frames.
+ * 
+ */
 #define TITLE_HEADER_SWITCH_FRAMES                  (int)(FRAME_RATE * TITLE_HEADER_SWITCH_PERIOD)
+
+/**
+ * @brief TITLE_HEADER_SWITCH_SCROLL_TIME in frames.
+ * 
+ */
 #define TITLE_HEADER_SWITCH_SCROLL_FRAMES           (int)(FRAME_RATE * TITLE_HEADER_SWITCH_SCROLL_TIME)
 
 /* draw title header */

@@ -167,7 +167,7 @@ uint8_t check_collision(const game_data &game);
 /**
  * @brief Handle inputs during game over.
  * 
- * @field game The game data structure.
+ * @param game The game data structure.
  * 
  * @return true Returned if the player has not chosen to start a new game.
  * @return false Returned if the player has chosen to start a new game.
@@ -231,6 +231,13 @@ void draw_field(const game_data &game);
  * @param game The game data structure.
  */
 void draw_hud(const game_data &game);
+
+/**
+ * @brief Draw the scoreboard input window in the centre of the window.
+ * 
+ * @param game The game data structure.
+ */
+void draw_scoreboard_input(const game_data &game);
 
 /**
  * @brief Draw the game over text on top of the playing field. This is supposed to be called after game.game_over_filled is set.

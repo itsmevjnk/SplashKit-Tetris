@@ -1,5 +1,6 @@
 #include "game.h"
 #include "title.h"
+#include "settings.h"
 #include "config.h"
 
 /**
@@ -23,7 +24,10 @@ int main() {
     bool game_started = false; // set when the game has started (i.e. no longer at title screen)
     game_data game;
 
+    json settings = load_settings(); // load settings from JSON file
+
     title_data title = new_title();
+    title.level = get_level(settings); // load saved level setting
 
     while(true) {
         while(!quit_requested()) {
@@ -34,8 +38,10 @@ int main() {
                 /* title screen */
                 // game_started = true; // TODO: add title screen
                 game_started = handle_title_input(title);
-                if(game_started) game = new_game(); // set up new game
-                else {
+                if(game_started) {
+                    game = new_game(); // set up new game
+                    game.level = title.level; // load level from title screen
+                } else {
                     update_title(title);
                     draw_title(title);
                 }
@@ -59,6 +65,10 @@ int main() {
 
         if(quit_requested()) break; // quit has been requested and it's not just a game over, so we need to exit
     }
+
+    /* save level settings for persistence */
+    set_level(settings, title.level);
+    save_settings(settings);
 
     return 0;
 }

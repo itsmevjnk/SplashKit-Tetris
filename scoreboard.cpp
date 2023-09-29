@@ -36,10 +36,10 @@ void draw_scoreboard(database db, string last_line, int entries) {
         last_line_width = text_width(last_line, scoreboard_font, SCOREBOARD_CONTENT_TEXT_SIZE);
         width = MAX(width, last_line_width);
     }
-    width += 2 * (SCOREBOARD_BORDER_WIDTH + SCOREBOARD_PADDING);
+    width += 2 * SCOREBOARD_START;
 
     /* calculate scoreboard height */
-    int height = 2 * (SCOREBOARD_BORDER_WIDTH + SCOREBOARD_PADDING);
+    int height = 2 * SCOREBOARD_START;
     int title_height = text_height(" -- SCOREBOARD -- ", scoreboard_font, SCOREBOARD_TITLE_TEXT_SIZE); // title height
     height += title_height;
     int line_height = text_height(string(SCOREBOARD_NAME_MAXLEN, 'A') + string(" ") + string(HUD_SCORE_WIDTH, '0'), scoreboard_font, SCOREBOARD_CONTENT_TEXT_SIZE); // record line height
@@ -52,7 +52,7 @@ void draw_scoreboard(database db, string last_line, int entries) {
     draw_rectangle_on_bitmap(scoreboard, SCOREBOARD_BORDER_COLOR, 0, 0, width, height, option_line_width(SCOREBOARD_BORDER_WIDTH));
 
     /* draw bitmap elements */
-    draw_text_on_bitmap(scoreboard, " -- SCOREBOARD -- ", SCOREBOARD_TEXT_COLOR, scoreboard_font, SCOREBOARD_TITLE_TEXT_SIZE, (width - title_width) / 2, 0);
+    draw_text_on_bitmap(scoreboard, " -- SCOREBOARD -- ", SCOREBOARD_TEXT_COLOR, scoreboard_font, SCOREBOARD_TITLE_TEXT_SIZE, (width - title_width) / 2, SCOREBOARD_START + 0);
     bool next_row = true;
     for(int i = 0; i < entries; i++) {
         if(!has_row(result)) next_row = false; // no more rows to read
@@ -65,10 +65,10 @@ void draw_scoreboard(database db, string last_line, int entries) {
             next_row = get_next_row(result); // advance to next row
         }
 
-        draw_text_on_bitmap(scoreboard, line, SCOREBOARD_TEXT_COLOR, scoreboard_font, SCOREBOARD_CONTENT_TEXT_SIZE, (width - line_width) / 2, title_height + i * line_height);
+        draw_text_on_bitmap(scoreboard, line, SCOREBOARD_TEXT_COLOR, scoreboard_font, SCOREBOARD_CONTENT_TEXT_SIZE, (width - line_width) / 2, SCOREBOARD_START + title_height + i * line_height);
     }
     if(last_line.length() > 0) {
-        draw_text_on_bitmap(scoreboard, last_line, SCOREBOARD_TEXT_COLOR, scoreboard_font, SCOREBOARD_CONTENT_TEXT_SIZE, (width - last_line_width) / 2, title_height + entries * line_height);
+        draw_text_on_bitmap(scoreboard, last_line, SCOREBOARD_TEXT_COLOR, scoreboard_font, SCOREBOARD_CONTENT_TEXT_SIZE, (width - last_line_width) / 2, SCOREBOARD_START + title_height + entries * line_height);
     }
 
     /* draw bitmap on screen */

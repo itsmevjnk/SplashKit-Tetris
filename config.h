@@ -459,6 +459,18 @@
  */
 #define TITLE_MENU_COLOR                    COLOR_WHITE
 
+/**
+ * @brief The title screen copyright information text size (in pixels).
+ * 
+ */
+#define TITLE_COPYRIGHT_TEXT_SIZE           16
+
+/**
+ * @brief The title screen copyright information text colour.
+ * 
+ */
+#define TITLE_COPYRIGHT_TEXT_COLOR          COLOR_WHITE
+
 /* SCOREBOARD CONFIGURATION */
 
 /**

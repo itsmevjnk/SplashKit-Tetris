@@ -106,4 +106,11 @@ void draw_menu(const title_data &title);
  */
 void draw_title(const title_data &title);
 
+/**
+ * @brief Draw copyright information to the bottom of the window.
+ * 
+ * @param title The title data structure.
+ */
+void draw_copyright(const title_data &title);
+
 #endif

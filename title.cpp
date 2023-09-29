@@ -154,11 +154,21 @@ void draw_menu(const title_data &title) {
     free_bitmap(menu);
 }
 
+/* draw copyright information */
+void draw_copyright(const title_data &title) {
+    int char_height = text_height("A", title.menu_font, TITLE_COPYRIGHT_TEXT_SIZE);
+
+    draw_text("(c) 2023 Thanh Vinh Nguyen (itsmevjnk). Written for the SIT102 unit.", TITLE_COPYRIGHT_TEXT_COLOR, title.menu_font, TITLE_COPYRIGHT_TEXT_SIZE, 0, WINDOW_HEIGHT - 3 * char_height);
+    draw_text("Tetris and Tetriminos are trademarks of Tetris Holding.", TITLE_COPYRIGHT_TEXT_COLOR, title.menu_font, TITLE_COPYRIGHT_TEXT_SIZE, 0, WINDOW_HEIGHT - 2 * char_height);
+    draw_text("Tetris game design by Alexey Pajitnov.", TITLE_COPYRIGHT_TEXT_COLOR, title.menu_font, TITLE_COPYRIGHT_TEXT_SIZE, 0, WINDOW_HEIGHT - 1 * char_height);
+}
+
 /* draw title screen */
 void draw_title(const title_data &title) {
     clear_screen(TITLE_BG_COLOR);
     draw_header(title);
     draw_menu(title);
+    draw_copyright(title);
     if(title.show_scoreboard) draw_scoreboard(title.scoreboard);
 }
 

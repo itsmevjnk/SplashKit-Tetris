@@ -100,13 +100,25 @@ uint8_t check_collision(const game_data &game) {
 }
 
 /* handle game over input */
-bool handle_game_over(const game_data &game) {
+bool handle_game_over(game_data &game) {
+    if(!game.game_over_filled) return true; // lock input until stuff's actually happening
+
     if(key_released(RETURN_KEY)) {
         /* save record to scoreboard */
         // write_line(text_input() + " " + to_string(game.score)); // TODO
-        add_score(text_input(), game.score);
+        add_score(game.scoreboard, text_input(), game.score);
     }
-    return !(key_released(RETURN_KEY) || key_released(ESCAPE_KEY)); // start new game
+
+    if(key_released(RETURN_KEY) || key_released(ESCAPE_KEY)) {
+        if(!game.show_scoreboard) {
+            game.show_scoreboard = true; // switch to scoreboard
+        } else {
+            free_database(game.scoreboard); // close database
+            return false; // start new game
+        }
+    }
+
+    return true;
 }
 
 /* handle left move */
@@ -310,7 +322,8 @@ void draw_game_over(const game_data &game) {
     fill_rectangle(FIELD_BG_COLOR, x, y, width, height);
     draw_text("GAME OVER", HUD_TEXT_COLOR, game.hud_options.hud_font, GAME_OVER_TEXT_SIZE, x, y);
 
-    draw_scoreboard_input(game); // we need to draw scoreboard input too
+    if(!game.show_scoreboard) draw_scoreboard_input(game); // we need to draw scoreboard input too
+    else draw_scoreboard(game.scoreboard);
 }
 
 /* draw entire game */
@@ -445,6 +458,7 @@ void update_game(game_data &game) {
 #endif
                     /* we're overfilling */
                     game.game_over_filled = true;
+                    game.scoreboard = load_scoreboard(); // open database
                     start_reading_text({0, 0, WINDOW_WIDTH, WINDOW_HEIGHT}, "PLAYER"); // start reading text input (for getting player name)
                     return;
                 }

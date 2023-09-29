@@ -59,6 +59,9 @@ struct hud_drawing_options {
  * @field game_over Game over flag.
  * @field game_over_filled Set after the playing field has been filled for the game over screen.
  * @field frame_game_over The frame number where the game over condition was detected.
+ * @field show_scoreboard Set when the game scoreboard is to be shown after asking the player to add their score.
+ * 
+ * @field scoreboard The scoreboard database. This is only opened upon setting of game_over_filled, and is closed when the game returns back to the title screen.
  * 
  */
 struct game_data {
@@ -87,6 +90,9 @@ struct game_data {
     bool game_over;
     bool game_over_filled;
     uint64_t frame_game_over;
+    bool show_scoreboard;
+
+    database scoreboard;
 };
 
 /**
@@ -166,7 +172,7 @@ uint8_t check_collision(const game_data &game);
  * @return true Returned if the player has not chosen to start a new game.
  * @return false Returned if the player has chosen to start a new game.
  */
-bool handle_game_over(const game_data &game);
+bool handle_game_over(game_data &game);
 
 /**
  * @brief Handle left move action.

@@ -333,6 +333,8 @@
  */
 #define SPEED_INPUT_SWAP                4
 
+#define SPEED_INPUT_MENU                4
+
 /* GAME OVER */
 
 /**

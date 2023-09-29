@@ -8,7 +8,7 @@ title_data new_title() {
 
     result.selection = START_GAME;
     result.level = 0;
-    result.frame_num = 0;
+    result.frame_num = 0; result.frame_last_lr = 0; result.frame_last_ud = 0;
     result.header_font = font_named("GameFont");
     result.menu_font = font_named("GameFont");
 
@@ -29,6 +29,35 @@ title_data new_title() {
 
 /* handle title input */
 bool handle_title_input(title_data &title) {
+    if(key_down(RETURN_KEY)) {
+        switch(title.selection) {
+            case START_GAME:
+                return true; // start the game
+            case HI_SCORES:
+                break; // TODO
+        }
+    }
+
+    if(key_down(UP_KEY) && (title.frame_last_ud == 0 || title.frame_num - title.frame_last_ud >= FRAME_RATE / SPEED_INPUT_MENU)) {
+        title.frame_last_ud = title.frame_num;
+        if((int)title.selection > 0) title.selection = (title_selection)((int)title.selection - 1);
+    }
+
+    if(key_down(DOWN_KEY) && (title.frame_last_ud == 0 || title.frame_num - title.frame_last_ud >= FRAME_RATE / SPEED_INPUT_MENU)) {
+        title.frame_last_ud = title.frame_num;
+        if((int)title.selection < 1) title.selection = (title_selection)((int)title.selection + 1);
+    }
+
+    if(key_down(LEFT_KEY) && (title.frame_last_lr == 0 || title.frame_num - title.frame_last_lr >= FRAME_RATE / SPEED_INPUT_MENU)) {
+        title.frame_last_lr = title.frame_num;
+        if(title.level > 0) title.level--;
+    }
+
+    if(key_down(RIGHT_KEY) && (title.frame_last_lr == 0 || title.frame_num - title.frame_last_lr >= FRAME_RATE / SPEED_INPUT_MENU)) {
+        title.frame_last_lr = title.frame_num;
+        title.level++;
+    }
+
     return false; // game not starting yet
 }
 
@@ -83,11 +112,10 @@ void draw_menu(const title_data &title) {
     /* draw menu selections */
     draw_text_on_bitmap(menu, "START GAME", TITLE_MENU_COLOR, title.header_font, TITLE_MENU_TEXT_SIZE, title.menu_xoff, 0);
     draw_text_on_bitmap(menu, "HIGH SCORES", TITLE_MENU_COLOR, title.header_font, TITLE_MENU_TEXT_SIZE, title.menu_xoff, char_height);
-    draw_text_on_bitmap(menu, string("LEVEL: ") + ((title.selection == LEVEL_SETTING) ? string("\x11 ") : string("  ")) + int_to_string(title.level + 1, 2) + ((title.selection == LEVEL_SETTING) ? string(" \x10") : string("  ")), TITLE_MENU_COLOR, title.header_font, TITLE_MENU_TEXT_SIZE, title.menu_xoff, 2 * char_height);
+    draw_text_on_bitmap(menu, string("LEVEL: ") + ((title.level > 0) ? string("\x11 ") : string("  ")) + int_to_string(title.level + 1, 2) + string(" \x10"), TITLE_MENU_COLOR, title.header_font, TITLE_MENU_TEXT_SIZE, title.menu_xoff, 2 * char_height);
 
     /* draw pointer */
-    if(title.selection != LEVEL_SETTING)
-        draw_text_on_bitmap(menu, "\x10", TITLE_MENU_COLOR, title.header_font, TITLE_MENU_TEXT_SIZE, 0, (int)title.selection * char_height);
+    draw_text_on_bitmap(menu, "\x10", TITLE_MENU_COLOR, title.header_font, TITLE_MENU_TEXT_SIZE, 0, (int)title.selection * char_height);
 
     /* finally draw the bitmap to the window */
     draw_bitmap(menu, TITLE_MENU_CENTER_X - (title.menu_width - title.menu_xoff) / 2 + title.menu_xoff, TITLE_MENU_CENTER_Y - title.menu_height / 2);

@@ -6,9 +6,7 @@
 
 enum title_selection {
     START_GAME,
-    HI_SCORES,
-    LEVEL,
-    LEVEL_SETTING
+    HI_SCORES
 };
 
 struct title_data {
@@ -16,6 +14,8 @@ struct title_data {
     int level;
 
     uint64_t frame_num;
+    uint64_t frame_last_ud;
+    uint64_t frame_last_lr;
 
     font header_font;
     font menu_font;

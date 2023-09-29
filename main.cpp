@@ -42,7 +42,14 @@ int main() {
             } else {
                 /* the actual game */
                 game_started = handle_game_input(game);
-                if(!game_started) break; // get back to title screen (i.e. game over)
+                if(!game_started) {
+                    /* wait for key up event before getting back to title screen */
+                    while(key_down(RETURN_KEY)) {
+                        process_events();
+                        refresh_screen(FRAME_RATE);
+                    }
+                    break; // get back to title screen (i.e. game over)
+                }
                 update_game(game);
                 draw_game(game);
             }

@@ -23,6 +23,9 @@ struct title_data {
     int menu_width;
     int menu_height;
     int menu_xoff;
+
+    database scoreboard;
+    bool show_scoreboard = false;
 };
 
 title_data new_title(int level = 0);

@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "config.h"
 #include "settings.h"
+#include "scoreboard.h"
 
 /* create new title data structure */
 title_data new_title(int level) {
@@ -10,8 +11,11 @@ title_data new_title(int level) {
     result.selection = START_GAME;
     result.level = level;
     result.frame_num = 0; result.frame_last_lr = 0; result.frame_last_ud = 0;
+
     result.header_font = font_named("GameFont");
     result.menu_font = font_named("GameFont");
+
+    result.scoreboard = load_scoreboard();
 
     /* calculate menu X offset */
     result.menu_xoff = text_width("\x10 ", result.menu_font, TITLE_MENU_TEXT_SIZE);
@@ -34,33 +38,37 @@ title_data new_title(json settings) {
 
 /* handle title input */
 bool handle_title_input(title_data &title) {
-    if(key_down(RETURN_KEY)) {
+    if(key_released(RETURN_KEY)) {
         switch(title.selection) {
             case START_GAME:
+                free_database(title.scoreboard); // close scoreboard database
                 return true; // start the game
             case HI_SCORES:
+                title.show_scoreboard = !title.show_scoreboard;
                 break; // TODO
         }
     }
 
-    if(key_down(UP_KEY) && (title.frame_last_ud == 0 || title.frame_num - title.frame_last_ud >= FRAME_RATE / SPEED_INPUT_MENU)) {
-        title.frame_last_ud = title.frame_num;
-        if((int)title.selection > 0) title.selection = (title_selection)((int)title.selection - 1);
-    }
+    if(!title.show_scoreboard) { // block all input if showing scoreboard
+        if(key_down(UP_KEY) && (title.frame_last_ud == 0 || title.frame_num - title.frame_last_ud >= FRAME_RATE / SPEED_INPUT_MENU)) {
+            title.frame_last_ud = title.frame_num;
+            if((int)title.selection > 0) title.selection = (title_selection)((int)title.selection - 1);
+        }
 
-    if(key_down(DOWN_KEY) && (title.frame_last_ud == 0 || title.frame_num - title.frame_last_ud >= FRAME_RATE / SPEED_INPUT_MENU)) {
-        title.frame_last_ud = title.frame_num;
-        if((int)title.selection < 1) title.selection = (title_selection)((int)title.selection + 1);
-    }
+        if(key_down(DOWN_KEY) && (title.frame_last_ud == 0 || title.frame_num - title.frame_last_ud >= FRAME_RATE / SPEED_INPUT_MENU)) {
+            title.frame_last_ud = title.frame_num;
+            if((int)title.selection < 1) title.selection = (title_selection)((int)title.selection + 1);
+        }
 
-    if(key_down(LEFT_KEY) && (title.frame_last_lr == 0 || title.frame_num - title.frame_last_lr >= FRAME_RATE / SPEED_INPUT_MENU)) {
-        title.frame_last_lr = title.frame_num;
-        if(title.level > 0) title.level--;
-    }
+        if(key_down(LEFT_KEY) && (title.frame_last_lr == 0 || title.frame_num - title.frame_last_lr >= FRAME_RATE / SPEED_INPUT_MENU)) {
+            title.frame_last_lr = title.frame_num;
+            if(title.level > 0) title.level--;
+        }
 
-    if(key_down(RIGHT_KEY) && (title.frame_last_lr == 0 || title.frame_num - title.frame_last_lr >= FRAME_RATE / SPEED_INPUT_MENU)) {
-        title.frame_last_lr = title.frame_num;
-        title.level++;
+        if(key_down(RIGHT_KEY) && (title.frame_last_lr == 0 || title.frame_num - title.frame_last_lr >= FRAME_RATE / SPEED_INPUT_MENU)) {
+            title.frame_last_lr = title.frame_num;
+            title.level++;
+        }
     }
 
     return false; // game not starting yet
@@ -132,5 +140,6 @@ void draw_title(const title_data &title) {
     clear_screen(TITLE_BG_COLOR);
     draw_header(title);
     draw_menu(title);
+    if(title.show_scoreboard) draw_scoreboard(title.scoreboard);
 }
 

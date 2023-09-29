@@ -100,7 +100,7 @@ uint8_t check_collision(const game_data &game) {
 
 /* handle game over input */
 bool handle_game_over() {
-    return !key_down(RETURN_KEY); // only check if the RETURN key is pressed; if it is, then we start a new game
+    return !key_released(RETURN_KEY); // only check if the RETURN key is released; if it is, then we start a new game
 }
 
 /* handle left move */

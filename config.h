@@ -407,4 +407,22 @@
 
 #define TITLE_MENU_COLOR                    COLOR_WHITE
 
+/* SCOREBOARD CONFIGURATION */
+
+#define SCOREBOARD_TITLE_TEXT_SIZE          (HUD_TEXT_SIZE * 2)
+
+#define SCOREBOARD_CONTENT_TEXT_SIZE        HUD_TEXT_SIZE
+
+#define SCOREBOARD_NAME_MAXLEN              16
+
+#define SCOREBOARD_BORDER_WIDTH             HUD_BORDER_WIDTH
+
+#define SCOREBOARD_BORDER_COLOR             HUD_BORDER_COLOR
+
+#define SCOREBOARD_PADDING                  HUD_PADDING
+
+#define SCOREBOARD_BG_COLOR                 HUD_BG_COLOR
+
+#define SCOREBOARD_TEXT_COLOR               HUD_TEXT_COLOR
+
 #endif

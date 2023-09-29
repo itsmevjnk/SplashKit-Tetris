@@ -393,4 +393,8 @@
 
 #define TITLE_HEADER_COLOR_SHIFT_PERIOD     7
 
+#define TITLE_HEADER_SWITCH_PERIOD          1.5
+
+#define TITLE_HEADER_SWITCH_SCROLL_TIME     0.5
+
 #endif

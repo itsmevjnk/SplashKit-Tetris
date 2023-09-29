@@ -2,6 +2,7 @@
 #include "piece.h"
 #include "utils.h"
 #include "settings.h"
+#include "scoreboard.h"
 
 using namespace std;
 
@@ -99,8 +100,13 @@ uint8_t check_collision(const game_data &game) {
 }
 
 /* handle game over input */
-bool handle_game_over() {
-    return !key_released(RETURN_KEY); // only check if the RETURN key is released; if it is, then we start a new game
+bool handle_game_over(const game_data &game) {
+    if(key_released(RETURN_KEY)) {
+        /* save record to scoreboard */
+        // write_line(text_input() + " " + to_string(game.score)); // TODO
+        add_score(text_input(), game.score);
+    }
+    return !(key_released(RETURN_KEY) || key_released(ESCAPE_KEY)); // start new game
 }
 
 /* handle left move */
@@ -194,7 +200,7 @@ void handle_swap(game_data &game) {
 
 /* handle game inputs */
 bool handle_game_input(game_data &game) {
-    if(game.game_over) return handle_game_over();
+    if(game.game_over) return handle_game_over(game);
     else {
         if(key_down(LEFT_KEY) && (game.frame_last_move == 0 || game.frame_num - game.frame_last_move >= FRAME_RATE / SPEED_INPUT_MOVE))
             handle_left_move(game);
@@ -262,30 +268,57 @@ void draw_hud(const game_data &game) {
     }
 }
 
+/* draw the scoreboard input window */
+void draw_scoreboard_input(const game_data &game) {
+    /* calculate window width */
+    int title_width = text_width("PLEASE ENTER YOUR NAME", game.hud_options.hud_font, SCOREBOARD_CONTENT_TEXT_SIZE);
+    int decoration_width = text_width("\x10 ", game.hud_options.hud_font, SCOREBOARD_CONTENT_TEXT_SIZE);
+    int line_width_max = 2 * decoration_width + text_width(string(SCOREBOARD_NAME_MAXLEN, 'A'), game.hud_options.hud_font, SCOREBOARD_CONTENT_TEXT_SIZE);
+    int width = MAX(title_width, line_width_max) + 2 * SCOREBOARD_START;
+
+    /* calculate window height */
+    int height = 2 * SCOREBOARD_START;
+    int line_height = text_height(string(SCOREBOARD_NAME_MAXLEN, 'A'), game.hud_options.hud_font, SCOREBOARD_CONTENT_TEXT_SIZE);
+    height += 2 * line_height;
+
+    /* create and prepare window bitmap */
+    bitmap scoreboard_input = create_bitmap("ScoreboardInput", width, height);
+    clear_bitmap(scoreboard_input, SCOREBOARD_BG_COLOR);
+    draw_rectangle_on_bitmap(scoreboard_input, SCOREBOARD_BORDER_COLOR, 0, 0, width, height, option_line_width(SCOREBOARD_BORDER_WIDTH));
+
+    /* draw text elements */
+    draw_text_on_bitmap(scoreboard_input, "PLEASE ENTER YOUR NAME", SCOREBOARD_TEXT_COLOR, game.hud_options.hud_font, SCOREBOARD_CONTENT_TEXT_SIZE, (width - title_width) / 2, SCOREBOARD_START + 0);
+    draw_text_on_bitmap(scoreboard_input, "\x10 ", SCOREBOARD_TEXT_COLOR, game.hud_options.hud_font, SCOREBOARD_CONTENT_TEXT_SIZE, SCOREBOARD_START + 0, SCOREBOARD_START + line_height);
+    draw_text_on_bitmap(scoreboard_input, " \x11", SCOREBOARD_TEXT_COLOR, game.hud_options.hud_font, SCOREBOARD_CONTENT_TEXT_SIZE, width - SCOREBOARD_START - decoration_width, SCOREBOARD_START + line_height);
+    
+    string player_name = text_input();
+    int line_width = text_width(player_name, game.hud_options.hud_font, SCOREBOARD_CONTENT_TEXT_SIZE);
+    draw_text_on_bitmap(scoreboard_input, player_name, SCOREBOARD_TEXT_COLOR, game.hud_options.hud_font, SCOREBOARD_CONTENT_TEXT_SIZE, (width - line_width) / 2, SCOREBOARD_START + line_height);
+
+    /* now compose the bitmap onto the window */
+    draw_bitmap(scoreboard_input, (WINDOW_WIDTH - width) / 2, (WINDOW_HEIGHT - height) / 2);
+    free_bitmap(scoreboard_input);
+}
+
 /* draw the game over screen */
 void draw_game_over(const game_data &game) {
     /* we want to center the text, so we will need to calculate where to put it */
     int width = text_width("GAME OVER", game.hud_options.hud_font, GAME_OVER_TEXT_SIZE);
     int height = text_height("GAME OVER", game.hud_options.hud_font, GAME_OVER_TEXT_SIZE);
     int x = FIELD_X + (FIELD_WIDTH_PX - width) / 2;
-    int y = FIELD_Y + FIELD_HEIGHT_PX / 2 - height;
+    int y = FIELD_Y + (FIELD_HEIGHT_PX - height) / 2;
     fill_rectangle(FIELD_BG_COLOR, x, y, width, height);
     draw_text("GAME OVER", HUD_TEXT_COLOR, game.hud_options.hud_font, GAME_OVER_TEXT_SIZE, x, y);
 
-    width = text_width("Press ENTER to restart", game.hud_options.hud_font, GAME_OVER_TEXT_SIZE);
-    height = text_height("Press ENTER to restart", game.hud_options.hud_font, GAME_OVER_TEXT_SIZE);
-    x = FIELD_X + (FIELD_WIDTH_PX - width) / 2;
-    y = FIELD_Y + FIELD_HEIGHT_PX / 2;
-    fill_rectangle(FIELD_BG_COLOR, x, y, width, height);
-    draw_text("Press ENTER to restart", HUD_TEXT_COLOR, game.hud_options.hud_font, GAME_OVER_TEXT_SIZE, x, y);
+    draw_scoreboard_input(game); // we need to draw scoreboard input too
 }
 
 /* draw entire game */
 void draw_game(const game_data &game) {
     draw_field(game);
-    if(game.game_over_filled) draw_game_over(game);
-
     draw_hud(game);
+
+    if(game.game_over_filled) draw_game_over(game);
 }
 
 /* merge falling piece into playing field */
@@ -412,10 +445,18 @@ void update_game(game_data &game) {
 #endif
                     /* we're overfilling */
                     game.game_over_filled = true;
+                    start_reading_text({0, 0, WINDOW_WIDTH, WINDOW_HEIGHT}, "PLAYER"); // start reading text input (for getting player name)
                     return;
                 }
 
                 for(int x = 0; x < FIELD_WIDTH; x++) game.playing_field[row][x] = GAME_OVER_FILL_COLOR; // fill the row
+            }
+        } else if(reading_text()) {
+            /* implement max length limit */
+            string player_name = text_input();
+            if(player_name.length() > SCOREBOARD_NAME_MAXLEN) {
+                end_reading_text();
+                start_reading_text({0, 0, WINDOW_WIDTH, WINDOW_HEIGHT}, player_name.substr(0, SCOREBOARD_NAME_MAXLEN));
             }
         }
     } else {

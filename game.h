@@ -161,10 +161,12 @@ uint8_t check_collision(const game_data &game);
 /**
  * @brief Handle inputs during game over.
  * 
+ * @field game The game data structure.
+ * 
  * @return true Returned if the player has not chosen to start a new game.
  * @return false Returned if the player has chosen to start a new game.
  */
-bool handle_game_over();
+bool handle_game_over(const game_data &game);
 
 /**
  * @brief Handle left move action.

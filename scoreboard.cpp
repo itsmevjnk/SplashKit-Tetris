@@ -13,8 +13,8 @@ database load_scoreboard() {
     if(!db_exists) {
         /* new database */
         write_line("Creating DB.");
-        run_sql(result, "CREATE TABLE scoreboard (name TEXT, score INTEGER);");
-        free_all_query_results();
+        query_result r = run_sql(result, "CREATE TABLE scoreboard (name TEXT, score INTEGER);");
+        free_query_result(r);
     }
     return result;
 }
@@ -74,4 +74,16 @@ void draw_scoreboard(database db, string last_line, int entries) {
     /* draw bitmap on screen */
     draw_bitmap(scoreboard, (WINDOW_WIDTH - width) / 2, (WINDOW_HEIGHT - height) / 2);
     free_bitmap(scoreboard); // clean up
+}
+
+/* add score to scoreboard */
+void add_score(database db, string name, int score) {
+    query_result r = run_sql(db, "INSERT INTO scoreboard (name, score) VALUES ('" + name + "', " + to_string(score) + ");");
+    free_query_result(r);
+}
+
+void add_score(string name, int score) {
+    database db = load_scoreboard();
+    add_score(db, name, score);
+    free_database(db);
 }

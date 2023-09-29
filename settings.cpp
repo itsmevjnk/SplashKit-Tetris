@@ -1,6 +1,9 @@
 #include "settings.h"
+#include <sys/stat.h>
 
 json load_settings() {
+    struct stat buffer;
+    if(stat("Resources/json/settings.json", &buffer) != 0) return create_json(); // file does not exist, so we'll just return a blank JSON struct
     return json_from_file("settings.json");
 }
 

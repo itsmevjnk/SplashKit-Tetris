@@ -103,7 +103,7 @@ uint8_t check_collision(const game_data &game) {
 bool handle_game_over(game_data &game) {
     if(!game.game_over_filled) return true; // lock input until stuff's actually happening
 
-    if(key_released(RETURN_KEY)) {
+    if(key_released(RETURN_KEY) && !game.show_scoreboard) {
         /* save record to scoreboard */
         // write_line(text_input() + " " + to_string(game.score)); // TODO
         add_score(game.scoreboard, text_input(), game.score);

@@ -8,11 +8,12 @@ using namespace std;
 /* create scoreboard if one does not exist yet and load it */
 database load_scoreboard() {
     struct stat buffer;
+    if(stat("Resources/databases", &buffer) != 0) mkdir("Resources/databases"); // create databases folder
     bool db_exists = (stat("Resources/databases/scoreboard.db", &buffer) == 0);
     database result = open_database("scoreboard", "scoreboard.db"); // this will create the DB for us if it's not there yet
     if(!db_exists) {
         /* new database */
-        write_line("Creating DB.");
+        // write_line("Creating DB.");
         query_result r = run_sql(result, "CREATE TABLE scoreboard (name TEXT, score INTEGER);");
         free_query_result(r);
     }
